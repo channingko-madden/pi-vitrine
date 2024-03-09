@@ -1,22 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"github.com/channingko-madden/pi-vitrine/internal/system"
+	"github.com/channingko-madden/pi-vitrine/cmd/site"
+	"log"
+	"net/http"
 )
 
 func main() {
-
-	tempC, err := system.MeasureTemp()
-	if err == nil {
-		fmt.Println(tempC)
-	}
-
-	distro, err := system.DistroInfo()
-	if err == nil {
-		fmt.Println(distro)
-	}
-
-	pinfo := system.GetPiInfo()
-	fmt.Println(pinfo)
+	http.HandleFunc("/", site.HomePageHandler)
+	log.Fatal(http.ListenAndServe(":9000", nil))
 }

@@ -1,7 +1,6 @@
 package system
 
 import (
-	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -13,7 +12,7 @@ func MeasureTemp() (float64, error) {
 	command := exec.Command("/usr/bin/vcgencmd", "measure_temp")
 	out, err := command.Output()
 	if err != nil {
-		return 0.0, err
+		return -273.15, err
 	}
 	return strconv.ParseFloat(string(out[5:9]), 64)
 }
@@ -56,7 +55,6 @@ func GetPiInfo() PiInfo {
 
 	for _, l := range lines {
 		if strings.HasPrefix(l, "Hardware") {
-			fmt.Println(l)
 			if _, after, found := strings.Cut(l, ": "); found {
 				piInfo.Hardware = after
 			}
