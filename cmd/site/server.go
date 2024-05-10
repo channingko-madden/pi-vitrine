@@ -10,14 +10,16 @@ import (
 
 type HomePageInfo struct {
 	PiInfo     system.PiInfo
-	Temp       float64
+	CPUTemp    float64
+	GPUTemp    float64
 	DistroInfo string
 }
 
 func gatherHomePageData() HomePageInfo {
 	var info = HomePageInfo{}
 
-	info.Temp, _ = system.MeasureTemp()
+	info.CPUTemp, _ = system.MeasureCPUTemp()
+	info.GPUTemp, _ = system.MeasureGPUTemp()
 	info.DistroInfo, _ = system.DistroInfo()
 	info.PiInfo = system.GetPiInfo()
 
