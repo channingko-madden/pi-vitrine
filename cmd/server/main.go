@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"github.com/channingko-madden/pi-vitrine/cmd/site"
 	_ "github.com/jackc/pgx/v5/stdlib" // self registers a postgres driver
 	"log"
 	"net/http"
@@ -30,6 +29,7 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", site.HomePageHandler)
+	http.HandleFunc("/", HomePageHandler)
+	http.HandleFunc("/system", CreateSystemDataHandler)
 	log.Fatal(http.ListenAndServe(":9000", nil))
 }
