@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/channingko-madden/pi-vitrine/db"
+	"github.com/channingko-madden/pi-vitrine/internal/data"
 	"path/filepath"
 	"testing"
 	"time"
@@ -54,13 +55,13 @@ func TestSystemDataCreate(t *testing.T) {
 
 	testDb := NewDb(connStr)
 
-	systemData := db.SystemData{
+	systemData := data.System{
 		MacAddr: "macaddr",
 		CPUTemp: 40.0,
 		GPUTemp: 35.5,
 	}
 
-	systemData.Create(testDb)
+	err = db.CreateSystem(testDb, &systemData)
 
 	if systemData.Id == 0 {
 		t.Fail()

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"github.com/channingko-madden/pi-vitrine/internal/data"
 )
 
 // Pi system information
@@ -13,31 +14,36 @@ type SystemData struct {
 	CreatedAt string
 }
 
-func (data *SystemData) Create(db *sql.DB) error {
-	statement := "insert into system (mac_addr, temp_cpu, temp_gpu) values ($1, $2, $3) returning id, created_at"
-	stmt, err := db.Prepare(statement)
+type SystemRepository interface {
+	CreateSystem(system *data.System) error
+	GetAllSystemData(macAddr string) ([]data.System, error)
+}
+
+func (r *PostgresDeviceRepository) CreateSystem(data *data.System) error {
+	statement := "insert into system (mac_addr, temp_cpu, temp_gpu) values ($1, $2, $3) returning created_at"
+	stmt, err := r.conn.Prepare(statement)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(data.MacAddr, data.CPUTemp, data.GPUTemp).Scan(&data.Id, &data.CreatedAt)
+	err = stmt.QueryRow(data.MacAddr, data.CPUTemp, data.GPUTemp).Scan(&data.CreatedAt)
 	return err
 }
 
-func GetAllSystemData(db *sql.DB, macAddr string) ([]SystemData, error) {
+func (r *PostgresDeviceRepository) GetAllSystemData(macAddr string) ([]data.System, error) {
 
-	data := []SystemData{}
+	allData := []data.System{}
 
 	statement := "select id, temp_cpu, temp_gpu, created_at from system where mac_addr = $1"
-	stmt, err := db.Prepare(statement)
+	stmt, err := r.conn.Prepare(statement)
 	if err != nil {
-		return data, err
+		return allData, err
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(macAddr)
 	if err != nil {
-		return data, err
+		return allData, err
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -46,9 +52,16 @@ func GetAllSystemData(db *sql.DB, macAddr string) ([]SystemData, error) {
 		}
 		err = rows.Scan(&systemData.Id, &systemData.CPUTemp, &systemData.GPUTemp, &systemData.CreatedAt)
 		if err != nil {
-			return data, err
+			return allData, err
 		}
-		data = append(data, systemData)
+
+		outData := data.System{
+			MacAddr:   systemData.MacAddr,
+			CPUTemp:   systemData.CPUTemp,
+			GPUTemp:   systemData.GPUTemp,
+			CreatedAt: systemData.CreatedAt,
+		}
+		allData = append(allData, outData)
 	}
-	return data, err
+	return allData, err
 }
