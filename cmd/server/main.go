@@ -1,8 +1,7 @@
 package main
 
 import (
-	"database/sql"
-	_ "github.com/jackc/pgx/v5/stdlib" // self registers a postgres driver
+	"github.com/channingko-madden/pi-vitrine/db"
 	"log"
 	"net/http"
 )
@@ -13,19 +12,15 @@ import (
 // DB is a handle, not the actual connection. It has a pool of
 // DB connections in the background.
 // Can use a global struct like this or pass around DB.
-var Db *sql.DB
+var Db *db.PostgresDeviceRepository
 
 // the init function is called automatically for every package!
 // Sets up connection to the database (doesn't open it!)
 // Opening occurs lazily
 func init() {
-	var err error
-	// can't use := b/c scope?
-	Db, err = sql.Open("pgx", "user=pi-vitrine dbname=pi-vitrine password=pi-vitrine")
+	connection := "user=pi-vitrine dbname=pi-vitrine password=pi-vitrine"
 
-	if err != nil {
-		panic(err)
-	}
+	Db = db.NewPostgresDeviceRepository(connection)
 }
 
 func main() {

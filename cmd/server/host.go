@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/channingko-madden/pi-vitrine/db"
+	"github.com/channingko-madden/pi-vitrine/internal/cher"
 )
 
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 func CreateSystemDataHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
-	var data db.SystemData
+	var data cher.System
 	err := decoder.Decode(&data)
 
 	if err != nil {
@@ -31,7 +31,7 @@ func CreateSystemDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = data.Create(Db)
+	err = Db.CreateSystem(&data)
 
 	if err != nil {
 		w.WriteHeader(500)

@@ -2,18 +2,15 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 type PostgresDeviceRepository struct {
 	conn *sql.DB
 }
 
-func NewPostgresDeviceRepository(user string, dbname string, password string) *PostgresDeviceRepository {
+func NewPostgresDeviceRepository(connection string) *PostgresDeviceRepository {
 
-	s := fmt.Sprintf("user=%s dbname=%s password=%s", user, dbname, password)
-
-	Db, err := sql.Open("pgx", s)
+	Db, err := sql.Open("pgx", connection)
 
 	if err != nil {
 		panic(err)

@@ -2,9 +2,8 @@ package db_test
 
 import (
 	"context"
-	"database/sql"
 	"github.com/channingko-madden/pi-vitrine/db"
-	"github.com/channingko-madden/pi-vitrine/internal/data"
+	"github.com/channingko-madden/pi-vitrine/internal/cher"
 	"path/filepath"
 	"testing"
 	"time"
@@ -15,17 +14,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func NewDb(connection string) *sql.DB {
-	Db, err := sql.Open("pgx", connection)
-
-	if err != nil {
-		panic(err)
-	}
-	return Db
-}
-
-func TestSystemDataCreate(t *testing.T) {
-
+func CreateTestDbConnection(t *testing.T) string {
 	ctx := context.Background()
 
 	pgContainer, err := postgres.Run(ctx,
@@ -53,18 +42,22 @@ func TestSystemDataCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testDb := NewDb(connStr)
+	return connStr
+}
 
-	systemData := data.System{
+func TestSystemDataCreate(t *testing.T) {
+
+	testDb := db.NewPostgresDeviceRepository(CreateTestDbConnection(t))
+
+	systemData := cher.System{
 		MacAddr: "macaddr",
 		CPUTemp: 40.0,
 		GPUTemp: 35.5,
 	}
 
-	err = db.CreateSystem(testDb, &systemData)
-
-	if systemData.Id == 0 {
-		t.Fail()
+	err := testDb.CreateSystem(&systemData)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	if len(systemData.CreatedAt) == 0 {
@@ -73,7 +66,7 @@ func TestSystemDataCreate(t *testing.T) {
 
 	t.Logf("%+v\n", systemData)
 
-	getData, err := db.GetAllSystemData(testDb, "macaddr")
+	getData, err := testDb.GetAllSystemData("macaddr")
 
 	if err != nil {
 		t.Fatal(err)
@@ -86,5 +79,65 @@ func TestSystemDataCreate(t *testing.T) {
 	if getData[0] != systemData {
 		t.Fail()
 	}
+
+}
+
+func TestDeviceCreate(t *testing.T) {
+	testDb := db.NewPostgresDeviceRepository(CreateTestDbConnection(t))
+
+	deviceData := cher.Device{
+		MacAddr:  "my_address",
+		Hardware: "blazingly_fast",
+		Revision: "newest",
+		Serial:   "123abc",
+		Model:    "B+",
+	}
+
+	err := testDb.CreateDevice(&deviceData)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(deviceData.CreatedAt) == 0 {
+		t.Fatal(err)
+	}
+
+	t.Logf("%+v\n", deviceData)
+
+	getData, err := testDb.GetDevice(deviceData.MacAddr)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(getData.CreatedAt) == 0 {
+		t.Fatal(err)
+	}
+
+	if getData.CreatedAt != deviceData.CreatedAt {
+		t.Fail()
+	}
+
+	if getData.MacAddr != deviceData.MacAddr {
+		t.Fail()
+	}
+
+	if getData.Hardware != deviceData.Hardware {
+		t.Fail()
+	}
+
+	if getData.Revision != deviceData.Revision {
+		t.Fail()
+	}
+
+	if getData.Serial != deviceData.Serial {
+		t.Fail()
+	}
+
+	if getData.Model != deviceData.Model {
+		t.Fail()
+	}
+
+	t.Logf("%+v\n", getData)
 
 }

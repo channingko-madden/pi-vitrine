@@ -1,8 +1,7 @@
 package db
 
 import (
-	"database/sql"
-	"github.com/channingko-madden/pi-vitrine/internal/data"
+	"github.com/channingko-madden/pi-vitrine/internal/cher"
 )
 
 // Pi system information
@@ -15,11 +14,11 @@ type SystemData struct {
 }
 
 type SystemRepository interface {
-	CreateSystem(system *data.System) error
-	GetAllSystemData(macAddr string) ([]data.System, error)
+	CreateSystem(system *cher.System) error
+	GetAllSystemData(macAddr string) ([]cher.System, error)
 }
 
-func (r *PostgresDeviceRepository) CreateSystem(data *data.System) error {
+func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
 	statement := "insert into system (mac_addr, temp_cpu, temp_gpu) values ($1, $2, $3) returning created_at"
 	stmt, err := r.conn.Prepare(statement)
 	if err != nil {
@@ -30,9 +29,9 @@ func (r *PostgresDeviceRepository) CreateSystem(data *data.System) error {
 	return err
 }
 
-func (r *PostgresDeviceRepository) GetAllSystemData(macAddr string) ([]data.System, error) {
+func (r *PostgresDeviceRepository) GetAllSystemData(macAddr string) ([]cher.System, error) {
 
-	allData := []data.System{}
+	allData := []cher.System{}
 
 	statement := "select id, temp_cpu, temp_gpu, created_at from system where mac_addr = $1"
 	stmt, err := r.conn.Prepare(statement)
@@ -55,7 +54,7 @@ func (r *PostgresDeviceRepository) GetAllSystemData(macAddr string) ([]data.Syst
 			return allData, err
 		}
 
-		outData := data.System{
+		outData := cher.System{
 			MacAddr:   systemData.MacAddr,
 			CPUTemp:   systemData.CPUTemp,
 			GPUTemp:   systemData.GPUTemp,
