@@ -1,4 +1,4 @@
-package site
+package main
 
 import (
 	"html/template"
@@ -27,7 +27,7 @@ func gatherHomePageData() HomePageInfo {
 }
 
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("cmd/site/templates/home.html")
+	temp, err := template.ParseFiles("cmd/client/templates/home.html")
 	if err == nil {
 		data := gatherHomePageData()
 		temp.Execute(w, data)
