@@ -7,5 +7,5 @@ type Device struct {
 	Revision  string `json:"revision"`
 	Serial    string `json:"serial"`
 	Model     string `json:"model"`
-	CreatedAt string `json:"created_at"`
+	CreatedAt string
 }

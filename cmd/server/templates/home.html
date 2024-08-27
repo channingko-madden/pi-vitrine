@@ -9,10 +9,25 @@ Title: home.html
         <meta name="description" content="Homepage for pi-vitrine host" />
         <meta http-equiv="author" content="Channing Ko-Madden" />
         <title>Homepage</title>
+        <script src="https://unpkg.com/htmx.org@2.0.2"></script>
 </head>
 
 <body>
         <h1>pi-vitrine</h1>
+        <form hx-get="/device" hx-target="#device_info">
+                <input type="search" name="mac_addr" placeholder="MAC address" minlength="1"
+                                required/>
+                <input type="submit" value="Get Device Info"/>
+        </form>
+
+        <div id="device_info"></div>
+
+        <form hx-get="/system" hx-target="#system_data">
+                <input type="search" name="mac_addr" placeholder="MAC address" minlength="1"
+                                required/>
+                <input type="submit" value="Get System Data"/>
+        </form>
+        <div id="system_data"></div>
 </body>
 
 </html>

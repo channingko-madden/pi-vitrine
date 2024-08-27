@@ -1,13 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/channingko-madden/pi-vitrine/db"
 	"log"
 	"net/http"
 )
-
-// the _ in the import sets the name of the package to _.
-// This is b/c this driver package shouldn't be used directly!
 
 // DB is a handle, not the actual connection. It has a pool of
 // DB connections in the background.
@@ -18,13 +16,19 @@ var Db *db.PostgresDeviceRepository
 // Sets up connection to the database (doesn't open it!)
 // Opening occurs lazily
 func init() {
-	connection := "user=pi-vitrine dbname=pi-vitrine password=pi-vitrine"
+	connection := "user=pi-vitrine dbname=pi_vitrine password=pi-vitrine"
 
 	Db = db.NewPostgresDeviceRepository(connection)
 }
 
 func main() {
-	http.HandleFunc("/", HomePageHandler)
-	http.HandleFunc("/system", CreateSystemDataHandler)
+
+	fmt.Println("localhost:9000")
+
+	http.HandleFunc("GET /", HomePageHandler)
+	http.HandleFunc("POST /system", CreateSystemDataHandler)
+	http.HandleFunc("GET /system", GetSystemDataHandler)
+	http.HandleFunc("GET /device", GetDeviceHandler)
+	http.HandleFunc("POST /device", CreateDeviceHandler)
 	log.Fatal(http.ListenAndServe(":9000", nil))
 }

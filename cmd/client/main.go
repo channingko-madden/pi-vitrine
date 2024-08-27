@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Pass URL of server as a CLI arg
 func main() {
 	http.HandleFunc("/", HomePageHandler)
 	log.Fatal(http.ListenAndServe(":9000", nil))
