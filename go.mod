@@ -6,6 +6,8 @@ require (
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.32.0
+	periph.io/x/conn/v3 v3.7.1
+	periph.io/x/host/v3 v3.8.2
 )
 
 require (
