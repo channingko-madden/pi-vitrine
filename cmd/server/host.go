@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/channingko-madden/pi-vitrine/internal"
 	"github.com/channingko-madden/pi-vitrine/internal/cher"
 )
 
@@ -52,7 +53,7 @@ func GetSystemDataHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := Db.GetAllSystemData(macAddr)
 
 	if err != nil || len(data) == 0 {
-		errorMessage(w, fmt.Sprintf("System data for device with MAC Address %s not found", macAddr))
+		internal.ErrorMessage(w, fmt.Sprintf("System data for device with MAC Address %s not found", macAddr))
 	} else {
 		temp, err := template.ParseFiles("cmd/server/templates/system_data.html")
 		if err == nil {
@@ -60,16 +61,6 @@ func GetSystemDataHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Default().Print(err)
 		}
-	}
-
-}
-
-func errorMessage(w http.ResponseWriter, errorMsg string) {
-	temp, err := template.ParseFiles("cmd/server/templates/error_msg.html")
-	if err == nil {
-		temp.Execute(w, errorMsg)
-	} else {
-		log.Default().Print(err)
 	}
 
 }
@@ -82,7 +73,7 @@ func GetDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	device, err := Db.GetDevice(macAddr)
 
 	if err != nil {
-		errorMessage(w, fmt.Sprintf("Device with MAC Address %s not found", macAddr))
+		internal.ErrorMessage(w, fmt.Sprintf("Device with MAC Address %s not found", macAddr))
 	} else {
 		temp, err := template.ParseFiles("cmd/server/templates/device.html")
 		if err == nil {

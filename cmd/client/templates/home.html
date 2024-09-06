@@ -6,9 +6,10 @@ Title: home.html
 <html>
 
 <head>
-	<meta name="description" content="Homepage for pi-vitrine clients" />
+	<meta name="description" content="Homepage for pi-vitrine client" />
 	<meta http-equiv="author" content="Channing Ko-Madden" />
 	<title>Homepage</title>
+        <script src="https://unpkg.com/htmx.org@2.0.2"></script>
 </head>
 
 <body>
@@ -25,6 +26,8 @@ Title: home.html
 	<p>
 		Pi Info: {{ .PiInfo }}
 	</p>
+        <button hx-get="/env" hx-target="#env_data">Get Env Data</button>
+        <div id="env_data"></div>
 </body>
 
 </html>

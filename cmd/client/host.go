@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/channingko-madden/pi-vitrine/internal"
 	"github.com/channingko-madden/pi-vitrine/internal/system"
 )
 
@@ -32,6 +34,22 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 		data := gatherHomePageData()
 		temp.Execute(w, data)
 	} else {
-		log.Default().Print(err)
+		log.Print(err)
+	}
+}
+
+func GetEnvHandler(w http.ResponseWriter, r *http.Request) {
+	temp, err := template.ParseFiles("cmd/client/templates/env_data.html")
+	if err == nil {
+		data, err := GetEnvData()
+		if err != nil {
+			log.Print(err)
+			internal.ErrorMessage(w, fmt.Sprintf("Error reading BME280 sensor"))
+		} else {
+			temp.Execute(w, data)
+		}
+	} else {
+		log.Print(err)
+		internal.ErrorMessage(w, fmt.Sprintf("Unable to read template file"))
 	}
 }

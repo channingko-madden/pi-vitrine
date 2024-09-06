@@ -7,6 +7,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.32.0
 	periph.io/x/conn/v3 v3.7.1
+	periph.io/x/devices/v3 v3.7.1
 	periph.io/x/host/v3 v3.8.2
 )
 
