@@ -7,7 +7,7 @@ import (
 // Pi system information
 type SystemData struct {
 	Id        int
-	MacAddr   string
+	DeviceId  int
 	CPUTemp   float64
 	GPUTemp   float64
 	CreatedAt string
@@ -19,13 +19,17 @@ type SystemRepository interface {
 }
 
 func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
-	statement := "insert into system (mac_addr, temp_cpu, temp_gpu) values ($1, $2, $3) returning created_at"
+
+	// Get the device id using the device name
+	device := r.GetDevice(
+
+	statement := "insert into system (device_id, temp_cpu, temp_gpu) values ($1, $2, $3) returning created_at"
 	stmt, err := r.conn.Prepare(statement)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(data.MacAddr, data.CPUTemp, data.GPUTemp).Scan(&data.CreatedAt)
+	err = stmt.QueryRow(data.DeviceId, data.CPUTemp, data.GPUTemp).Scan(&data.CreatedAt)
 	return err
 }
 

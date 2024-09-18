@@ -34,9 +34,9 @@ func (r *PostgresDeviceRepository) CreateDevice(deviceData *cher.Device) error {
 	return err
 }
 
-func (r *PostgresDeviceRepository) GetDevice(macAddr string) (cher.Device, error) {
+func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, error) {
 
-	statement := "select id, hardware, revision, serial, model, created_at from devices where mac_addr = $1"
+	statement := "select id, mac_addr, hardware, revision, serial, model, created_at from devices where name = $1"
 
 	stmt, err := r.conn.Prepare(statement)
 	if err != nil {
@@ -45,14 +45,15 @@ func (r *PostgresDeviceRepository) GetDevice(macAddr string) (cher.Device, error
 	defer stmt.Close()
 
 	var device Device
-	err = stmt.QueryRow(macAddr).Scan(&device.Id, &device.Hardware, &device.Revision, &device.Serial, &device.Model, &device.CreatedAt)
+	err = stmt.QueryRow(deviceName).Scan(&device.Id, &device.MacAddr, &device.Hardware, &device.Revision, &device.Serial, &device.Model, &device.CreatedAt)
 
 	if err != nil {
 		return cher.Device{}, err
 	}
 
 	outDevice := cher.Device{
-		MacAddr:   macAddr,
+		Name:      deviceName,
+		MacAddr:   device.MacAddr,
 		Hardware:  device.Hardware,
 		Revision:  device.Revision,
 		Serial:    device.Serial,
