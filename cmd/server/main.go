@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/channingko-madden/pi-vitrine/db"
+	"github.com/channingko-madden/pi-vitrine/internal"
 	"log"
 	"net/http"
 	"strconv"
@@ -35,9 +36,10 @@ func main() {
 	fmt.Printf("pi-vitrine server running on %s\n", addr)
 
 	http.HandleFunc("GET /", HomePageHandler)
-	http.HandleFunc("POST /system", CreateSystemDataHandler)
+	http.Handle("POST /system", internal.HostErrorHandler(CreateSystemDataHandler))
 	http.HandleFunc("GET /system", GetSystemDataHandler)
-	http.HandleFunc("GET /device", GetDeviceHandler)
+	http.HandleFunc("GET /device", GetAllDevicesHandler)
+	http.HandleFunc("GET /device/{name}", GetDeviceHandler)
 	http.HandleFunc("POST /device", CreateDeviceHandler)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
