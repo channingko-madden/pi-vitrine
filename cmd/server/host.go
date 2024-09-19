@@ -7,101 +7,153 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/channingko-madden/pi-vitrine/db"
 	"github.com/channingko-madden/pi-vitrine/internal"
 	"github.com/channingko-madden/pi-vitrine/internal/cher"
 )
 
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 	temp, err := template.ParseFiles("cmd/server/templates/home.html")
-	if err == nil {
-		temp.Execute(w, nil)
-	} else {
-		log.Default().Print(err)
+	if err != nil {
+		panic(err)
 	}
+	temp.Execute(w, nil)
 }
 
 // post "/system"
 // TODO: Create test for this, "testing" package has it all!
-func CreateSystemDataHandler(w http.ResponseWriter, r *http.Request) {
+func CreateSystemDataHandler(w http.ResponseWriter, r *http.Request) *internal.HostError {
 	decoder := json.NewDecoder(r.Body)
 
 	var data cher.System
 	err := decoder.Decode(&data)
 
 	if err != nil {
-		w.WriteHeader(400)
-		return
+		return &internal.HostError{
+			Error:   err,
+			Message: "Could not decode json body",
+			Code:    400,
+		}
 	}
 
 	err = Db.CreateSystem(&data)
 
 	if err != nil {
-		w.WriteHeader(500)
+		return &internal.HostError{
+			Error:   err,
+			Message: "Could not store system data",
+			Code:    500,
+		}
 	} else {
 		w.WriteHeader(201)
+		return nil
 	}
 }
 
 // get "/system" returns system data for a given device
-// query param "mac_addr" contains the MAC address
 // Returns html with data summaries
 
 // TODO: query params to limit time range of data
 func GetSystemDataHandler(w http.ResponseWriter, r *http.Request) {
-	macAddr := r.URL.Query().Get("mac_addr")
+	deviceName := r.URL.Query().Get("device_name")
 
-	data, err := Db.GetAllSystemData(macAddr)
+	data, err := Db.GetAllSystemData(deviceName)
 
 	if err != nil || len(data) == 0 {
-		internal.ErrorMessage(w, fmt.Sprintf("System data for device with MAC Address %s not found", macAddr))
+		internal.ErrorMessage(w, fmt.Sprintf("System data for device %s not found", deviceName))
 	} else {
 		temp, err := template.ParseFiles("cmd/server/templates/system_data.html")
-		if err == nil {
-			temp.Execute(w, data[len(data)-1])
-		} else {
-			log.Default().Print(err)
+		if err != nil {
+			panic(err)
 		}
+		temp.Execute(w, data[len(data)-1])
 	}
 
 }
 
-// query param "mac_addr" contains the MAC address
-// Returns html
+// Responds with html
 func GetDeviceHandler(w http.ResponseWriter, r *http.Request) {
-	macAddr := r.URL.Query().Get("mac_addr")
+	//deviceName := r.URL.Query().Get("device_name")
+	deviceName := r.PathValue("name")
 
-	device, err := Db.GetDevice(macAddr)
-
-	if err != nil {
-		internal.ErrorMessage(w, fmt.Sprintf("Device with MAC Address %s not found", macAddr))
-	} else {
-		temp, err := template.ParseFiles("cmd/server/templates/device.html")
-		if err == nil {
-			temp.Execute(w, device)
-		} else {
-			log.Default().Print(err)
-		}
-	}
-}
-
-func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-
-	var data cher.Device
-	err := decoder.Decode(&data)
-
-	if err != nil {
-		log.Default().Print(err)
-		w.WriteHeader(400)
+	if len(deviceName) == 0 {
+		internal.ErrorMessage(w, "URL path is missing 'name'")
 		return
 	}
 
-	err = Db.CreateDevice(&data)
+	device, err := Db.GetDevice(deviceName)
+
+	if err != nil {
+		if dneError, ok := err.(*db.DeviceDoesNotExistError); ok {
+			internal.ErrorMessage(w, dneError.Error())
+		} else {
+			internal.ErrorMessage(w, fmt.Sprintf("Server error finding device %s", deviceName))
+		}
+	} else {
+		temp, err := template.ParseFiles("cmd/server/templates/device.html")
+		if err != nil {
+			panic(err)
+		}
+		temp.Execute(w, device)
+	}
+}
+
+// Responds with html
+func GetAllDevicesHandler(w http.ResponseWriter, r *http.Request) {
+
+	temp, err := template.ParseFiles("cmd/server/templates/list_devices.html")
+	if err != nil {
+		panic(err)
+	}
+
+	devices, err := Db.GetAllDevices()
+	if err != nil {
+		if _, ok := err.(*db.DeviceDoesNotExistError); ok {
+			internal.ErrorMessage(w, "No devices exist")
+		} else {
+			internal.ErrorMessage(w, "Server error listing devices")
+		}
+		return
+	}
+
+	temp.Execute(w, devices)
+}
+
+// Responds with html
+func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
+	// deviceName is within the POST form!
+	r.ParseForm() // for urlencoded!
+
+	deviceName := r.PostFormValue("device_name")
+
+	if len(deviceName) == 0 {
+		internal.ErrorMessage(w, "POST form is missing 'device_name'")
+		return
+	}
+
+	// check if device already exists
+	existingDevice, err := Db.GetDevice(deviceName)
+	if err != nil {
+		if _, ok := err.(*db.DeviceDoesNotExistError); !ok {
+			log.Default().Print(err)
+			internal.ErrorMessage(w, fmt.Sprintf("Error saving device %s", deviceName))
+			return
+		}
+	} else if existingDevice.Name == deviceName {
+		internal.ErrorMessage(w, fmt.Sprintf("Device %s already exists", deviceName))
+		return
+	}
+
+	device := cher.Device{
+		Name: deviceName,
+	}
+	err = Db.CreateDevice(&device)
 
 	if err != nil {
 		log.Default().Print(err)
-		w.WriteHeader(500)
+		internal.ErrorMessage(w, fmt.Sprintf("Error saving device %s", deviceName))
 	} else {
-		w.WriteHeader(201)
+		internal.InfoMessage(w, fmt.Sprintf("Created device %s", deviceName))
 	}
+
 }

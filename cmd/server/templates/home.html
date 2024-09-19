@@ -10,24 +10,37 @@ Title: home.html
         <meta http-equiv="author" content="Channing Ko-Madden" />
         <title>Homepage</title>
         <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+        <script src="https://unpkg.com/htmx-ext-path-params@2.0.0/path-params.js"></script>
 </head>
 
 <body>
         <h1>pi-vitrine</h1>
-        <form hx-get="/device" hx-target="#device_info">
-                <input type="search" name="mac_addr" placeholder="MAC address" minlength="1"
-                                required/>
-                <input type="submit" value="Get Device Info"/>
-        </form>
+        <div>
+                <form hx-get="/device" hx-target="#device_info">
+                        <input type="submit" value="List All Devices" />
+                </form>
+                <div hx-ext="path-params">
+                        <form hx-get="/device/{name}" hx-include="[name='name']" hx-target="#device_info">
+                                <input type="search" name="name" placeholder="Device name" minlength="1" required />
+                                <input type="submit" value="Get Device Info" />
+                        </form>
+                </div>
 
-        <div id="device_info"></div>
+                <form hx-post="/device" hx-target="#device_info">
+                        <input type="search" name="device_name" placeholder="Device name" minlength="1" required />
+                        <input type="submit" value="Register Device" />
+                </form>
 
-        <form hx-get="/system" hx-target="#system_data">
-                <input type="search" name="mac_addr" placeholder="MAC address" minlength="1"
-                                required/>
-                <input type="submit" value="Get System Data"/>
-        </form>
-        <div id="system_data"></div>
+                <div id="device_info"></div>
+        </div> <!-- Device part of UI -->
+
+        <div>
+                <form hx-get="/system" hx-target="#system_data">
+                        <input type="search" name="device_name" placeholder="Device name" minlength="1" required />
+                        <input type="submit" value="Get System Data" />
+                </form>
+                <div id="system_data"></div>
+        </div> <!-- System data part of UI -->
 </body>
 
 </html>
