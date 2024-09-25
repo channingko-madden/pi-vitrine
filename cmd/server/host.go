@@ -73,7 +73,6 @@ func GetSystemDataHandler(w http.ResponseWriter, r *http.Request) {
 
 // Responds with html
 func GetDeviceHandler(w http.ResponseWriter, r *http.Request) {
-	//deviceName := r.URL.Query().Get("device_name")
 	deviceName := r.PathValue("name")
 
 	if len(deviceName) == 0 {
