@@ -1,13 +1,17 @@
 package internal
 
 import (
+	"embed"
 	"html/template"
 	"log"
 	"net/http"
 )
 
+//go:embed templates
+var files embed.FS
+
 func ErrorMessage(w http.ResponseWriter, errorMsg string) {
-	temp, err := template.ParseFiles("internal/templates/error_msg.html")
+	temp, err := template.ParseFS(files, "templates/error_msg.html")
 	if err != nil {
 		panic(err)
 	}
@@ -15,7 +19,7 @@ func ErrorMessage(w http.ResponseWriter, errorMsg string) {
 }
 
 func InfoMessage(w http.ResponseWriter, msg string) {
-	temp, err := template.ParseFiles("internal/templates/info_msg.html")
+	temp, err := template.ParseFS(files, "templates/info_msg.html")
 	if err != nil {
 		panic(err)
 	}

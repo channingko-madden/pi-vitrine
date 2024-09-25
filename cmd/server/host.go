@@ -13,7 +13,7 @@ import (
 )
 
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("cmd/server/templates/home.html")
+	temp, err := template.ParseFS(content, "templates/home.html")
 	if err != nil {
 		panic(err)
 	}
@@ -62,7 +62,7 @@ func GetSystemDataHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil || len(data) == 0 {
 		internal.ErrorMessage(w, fmt.Sprintf("System data for device %s not found", deviceName))
 	} else {
-		temp, err := template.ParseFiles("cmd/server/templates/system_data.html")
+		temp, err := template.ParseFS(content, "templates/system_data.html")
 		if err != nil {
 			panic(err)
 		}
@@ -89,7 +89,7 @@ func GetDeviceHandler(w http.ResponseWriter, r *http.Request) {
 			internal.ErrorMessage(w, fmt.Sprintf("Server error finding device %s", deviceName))
 		}
 	} else {
-		temp, err := template.ParseFiles("cmd/server/templates/device.html")
+		temp, err := template.ParseFS(content, "templates/device.html")
 		if err != nil {
 			panic(err)
 		}
@@ -100,7 +100,7 @@ func GetDeviceHandler(w http.ResponseWriter, r *http.Request) {
 // Responds with html
 func GetAllDevicesHandler(w http.ResponseWriter, r *http.Request) {
 
-	temp, err := template.ParseFiles("cmd/server/templates/list_devices.html")
+	temp, err := template.ParseFS(content, "templates/list_devices.html")
 	if err != nil {
 		panic(err)
 	}

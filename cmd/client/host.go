@@ -29,7 +29,7 @@ func gatherHomePageData() HomePageInfo {
 }
 
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("cmd/client/templates/home.html")
+	temp, err := template.ParseFS(content, "templates/home.html")
 	if err == nil {
 		data := gatherHomePageData()
 		temp.Execute(w, data)
@@ -39,7 +39,7 @@ func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEnvHandler(w http.ResponseWriter, r *http.Request) {
-	temp, err := template.ParseFiles("cmd/client/templates/env_data.html")
+	temp, err := template.ParseFS(content, "templates/env_data.html")
 	if err == nil {
 		data, err := GetEnvData()
 		if err != nil {
