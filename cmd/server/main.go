@@ -13,7 +13,7 @@ import (
 // DB is a handle, not the actual connection. It has a pool of
 // DB connections in the background.
 // Can use a global struct like this or pass around DB.
-var Db *db.PostgresDeviceRepository
+var Db db.Repository
 
 // the init function is called automatically for every package!
 // Sets up connection to the database (doesn't open it!)

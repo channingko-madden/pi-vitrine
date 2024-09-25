@@ -5,6 +5,11 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // self registers a postgres driver
 )
 
+type Repository interface {
+	SystemRepository
+	DeviceRepository
+}
+
 type PostgresDeviceRepository struct {
 	conn *sql.DB
 }

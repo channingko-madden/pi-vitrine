@@ -4,15 +4,51 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/channingko-madden/pi-vitrine/cmd/server"
-	"github.com/channingko-madden/pi-vitrine/db"
+	"github.com/channingko-madden/pi-vitrine/internal"
+	"github.com/channingko-madden/pi-vitrine/internal/cher"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
+type goodDb struct {
+}
+
+func (goodDb) CreateSystem(system *cher.System) error {
+	return nil
+}
+
+func (goodDb) GetAllSystemData(macAddr string) ([]cher.System, error) {
+	return []cher.System{
+		{
+			Name:    "test",
+			GPUTemp: 12.3,
+			CPUTemp: 45.6,
+		},
+	}, nil
+}
+
+func (goodDb) CreateDevice(device *cher.Device) error {
+	return nil
+}
+
+func (goodDb) GetDevice(macAddr string) (cher.Device, error) {
+	return cher.Device{Name: "test"}, nil
+}
+func (goodDb) GetAllDevices() ([]cher.Device, error) {
+	return []cher.Device{
+		{
+			Name: "test",
+		},
+	}, nil
+}
+
 func TestCreateSystemDataHandler(t *testing.T) {
-	body := db.SystemData{
-		MacAddr: "123ABC",
+
+	main.Db = goodDb{}
+
+	body := cher.System{
+		Name:    "123ABC",
 		CPUTemp: 23.32,
 		GPUTemp: 45.45,
 	}
@@ -27,7 +63,7 @@ func TestCreateSystemDataHandler(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	handler := http.HandlerFunc(main.CreateSystemDataHandler)
+	handler := internal.HostErrorHandler(main.CreateSystemDataHandler)
 
 	handler.ServeHTTP(recorder, req)
 

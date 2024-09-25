@@ -12,6 +12,7 @@ import (
 	"github.com/channingko-madden/pi-vitrine/internal/cher"
 )
 
+// GET "/"
 func HomePageHandler(w http.ResponseWriter, r *http.Request) {
 	temp, err := template.ParseFS(content, "templates/home.html")
 	if err != nil {
