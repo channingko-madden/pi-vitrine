@@ -6,26 +6,28 @@ import (
 	"strings"
 )
 
-// Measure pi temperature using /usr/bin/vcgencmd measure_temp
-// This command returns a value in the format "temp=XX.X'C
+// Measure Pi GPU temperature (C) using /usr/bin/vcgencmd measure_temp
 func MeasureGPUTemp() (float64, error) {
+
+	// This command returns a value in the format "temp=XX.X'C
 	command := exec.Command("/usr/bin/vcgencmd", "measure_temp")
 	out, err := command.Output()
 	if err != nil {
-		return -273.15, err
+		return 0, err
 	}
 	return strconv.ParseFloat(string(out[5:9]), 64)
 }
 
+// Measure Pi CPU temperature (C)
 func MeasureCPUTemp() (float64, error) {
 	command := exec.Command("cat", "/sys/class/thermal/thermal_zone0/temp")
 	out, err := command.Output()
 	if err != nil {
-		return -273.15, err
+		return 0, err
 	}
 	temp, err := strconv.ParseFloat(strings.TrimSuffix(string(out), "\n"), 64)
 	if err != nil {
-		return -273.15, err
+		return 0, err
 	}
 	return temp / 1000.0, nil
 }
