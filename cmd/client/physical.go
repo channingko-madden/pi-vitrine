@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/channingko-madden/pi-vitrine/internal"
 	"github.com/channingko-madden/pi-vitrine/internal/cher"
 	"github.com/channingko-madden/pi-vitrine/internal/system"
 	"log"
@@ -90,12 +91,16 @@ func SendSystemData(clientName string, serverAddress string, ctx context.Context
 				continue
 			}
 
+			data.CPUTemp = internal.CelciusToKelvin(data.CPUTemp)
+
 			data.GPUTemp, err = system.MeasureGPUTemp()
 
 			if err != nil {
 				log.Printf("Error getting GPU Temp: %s", err)
 				continue
 			}
+
+			data.GPUTemp = internal.CelciusToKelvin(data.GPUTemp)
 
 			jsonData, err := json.Marshal(data)
 
