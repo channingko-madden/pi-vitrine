@@ -22,10 +22,10 @@ func TestReportingPeriodWhereFilter(t *testing.T) {
 
 	filter = r.ReportingPeriodWhereFilter(start, end)
 
-	expected := "created_at >= 2024-04-20 16:20:00"
+	expected := "created_at >= '2024-04-20T16:20:00Z'"
 
 	if filter != expected {
-		t.Fatalf("The returned start only filter %s does not match the expected filter", filter)
+		t.Fatalf("The returned start only filter %s does not match the expected filter %s", filter, expected)
 	}
 
 	start = time.Time{}
@@ -33,10 +33,10 @@ func TestReportingPeriodWhereFilter(t *testing.T) {
 
 	filter = r.ReportingPeriodWhereFilter(start, end)
 
-	expected = "created_at <= 2024-04-20 16:20:00"
+	expected = "created_at <= '2024-04-20T16:20:00Z'"
 
 	if filter != expected {
-		t.Fatalf("The returned end only filter %s does not match the expected filter", filter)
+		t.Fatalf("The returned end only filter %s does not match the expected filter %s", filter, expected)
 	}
 
 	start = time.Date(2023, 4, 20, 16, 20, 0, 0, time.UTC)
@@ -44,9 +44,9 @@ func TestReportingPeriodWhereFilter(t *testing.T) {
 
 	filter = r.ReportingPeriodWhereFilter(start, end)
 
-	expected = "created_at >= 2023-04-20 16:20:00 and created_at <= 2024-04-20 16:20:00"
+	expected = "created_at >= '2023-04-20T16:20:00Z' and created_at <= '2024-04-20T16:20:00Z'"
 
 	if filter != expected {
-		t.Fatalf("The returned start + end filter %s does not match the expected filter", filter)
+		t.Fatalf("The returned start + end filter %s does not match the expected filter %s", filter, expected)
 	}
 }

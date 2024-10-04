@@ -39,11 +39,11 @@ func (r *PostgresDeviceRepository) ReportingPeriodWhereFilter(start time.Time, e
 		return ""
 	} else if start.IsZero() && !end.IsZero() {
 		// all records up to end
-		return fmt.Sprintf("created_at <= %s", end.Format(time.DateTime))
+		return fmt.Sprintf("created_at <= '%s'", end.Format(time.RFC3339Nano))
 	} else if !start.IsZero() && end.IsZero() {
 		// all records from start
-		return fmt.Sprintf("created_at >= %s", start.Format(time.DateTime))
+		return fmt.Sprintf("created_at >= '%s'", start.Format(time.RFC3339Nano))
 	} else {
-		return fmt.Sprintf("created_at >= %s and created_at <= %s", start.Format(time.DateTime), end.Format(time.DateTime))
+		return fmt.Sprintf("created_at >= '%s' and created_at <= '%s'", start.Format(time.RFC3339Nano), end.Format(time.RFC3339Nano))
 	}
 }

@@ -8,7 +8,7 @@ import (
 type indoorClimate struct {
 	Id               int
 	DeviceId         int
-	AirTemp          float64 // Kelivin
+	AirTemp          float64 // Kelvin
 	Pressure         float64 // Pascal
 	RelativeHumidity float64 // Decimal percent 0-100%
 	CreatedAt        string  // Unix timestamp "YYYY-MM-DD HH::MM::SS"
@@ -53,7 +53,7 @@ func (r *PostgresDeviceRepository) GetIndoorClimateData(deviceName string, start
 
 	timeFilter := r.ReportingPeriodWhereFilter(start, end)
 	if len(timeFilter) != 0 {
-		statement = statement + " and " + timeFilter
+		statement += " and " + timeFilter
 	}
 
 	stmt, err := r.conn.Prepare(statement)
