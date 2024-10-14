@@ -106,7 +106,7 @@ func (r *PostgresDeviceRepository) getDeviceId(deviceName string) (int, error) {
 
 	stmt, err := r.conn.Prepare(statement)
 	if err != nil {
-		return -1, err
+		return 0, err
 	}
 	defer stmt.Close()
 
@@ -114,8 +114,11 @@ func (r *PostgresDeviceRepository) getDeviceId(deviceName string) (int, error) {
 	err = stmt.QueryRow(deviceName).Scan(&deviceId)
 
 	if err != nil {
-		return -1, err
+		if err == sql.ErrNoRows {
+			return 0, &DeviceDoesNotExistError{}
+		}
+		return 0, err
 	}
 
-	return deviceId, err
+	return deviceId, nil
 }

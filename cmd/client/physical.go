@@ -1,7 +1,18 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"io"
 	"log"
+	"net/http"
+
+	"github.com/channingko-madden/pi-vitrine/internal"
+	"github.com/channingko-madden/pi-vitrine/internal/cher"
+	"github.com/channingko-madden/pi-vitrine/internal/system"
+
+	"time"
 
 	"periph.io/x/conn/v3/gpio"
 	"periph.io/x/conn/v3/i2c/i2creg"
@@ -9,18 +20,23 @@ import (
 	"periph.io/x/devices/v3/bmxx80"
 	"periph.io/x/host/v3"
 	"periph.io/x/host/v3/rpi"
-	"time"
 )
 
 func init() {
 	host.Init() // init needs to be outside the goroutine
 }
 
-func BlinkLED() {
+func BlinkLED(ctx context.Context) {
 	t := time.NewTicker(500 * time.Millisecond)
 	for l := gpio.Low; ; l = !l {
-		rpi.P1_36.Out(l) // physical pin my boy!
-		<-t.C
+		select {
+		case <-ctx.Done():
+			rpi.P1_36.Out(gpio.Low)
+			return
+		default:
+			rpi.P1_36.Out(l) // physical pin my boy!
+			<-t.C
+		}
 	}
 }
 
@@ -30,13 +46,13 @@ func GetEnvData() (physic.Env, error) {
 
 	if _, err := host.Init(); err != nil {
 		log.Println(err)
-		return env, err
+		return physic.Env{}, err
 	}
 
 	bus, err := i2creg.Open("1")
 	if err != nil {
 		log.Println(err)
-		return env, err
+		return physic.Env{}, err
 	}
 	defer bus.Close()
 
@@ -44,15 +60,162 @@ func GetEnvData() (physic.Env, error) {
 	dev, err := bmxx80.NewI2C(bus, 0x77, &bmxx80.DefaultOpts)
 	if err != nil {
 		log.Println(err)
-		return env, err
+		return physic.Env{}, err
 	}
 	defer dev.Halt()
 
 	// Read data
 	if err = dev.Sense(&env); err != nil {
 		log.Println(err)
-		return env, err
+		return physic.Env{}, err
 	}
 
 	return env, nil
+}
+
+// Send system data to the pi-vitrine server every 30 minutes
+func SendSystemData(clientName string, serverAddress string, ctx context.Context) {
+
+	var data = cher.System{
+		Name: clientName,
+	}
+	var err error
+	t := time.NewTicker(30 * time.Minute)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			data.CPUTemp, err = system.MeasureCPUTemp()
+
+			if err != nil {
+				log.Printf("Error getting CPU Temp: %s", err)
+				continue
+			}
+
+			data.CPUTemp = internal.CelciusToKelvin(data.CPUTemp)
+
+			data.GPUTemp, err = system.MeasureGPUTemp()
+
+			if err != nil {
+				log.Printf("Error getting GPU Temp: %s", err)
+				continue
+			}
+
+			data.GPUTemp = internal.CelciusToKelvin(data.GPUTemp)
+
+			jsonData, err := json.Marshal(data)
+
+			if err != nil {
+				log.Printf("Error json marshalling: %s", err)
+				continue
+			}
+
+			request, err := http.NewRequest("POST", serverAddress, bytes.NewBuffer(jsonData))
+
+			if err != nil {
+				log.Printf("Error creating HTTP POST request: %s", err)
+				continue
+			}
+
+			request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+			client := http.Client{}
+			response, err := client.Do(request)
+
+			if err != nil {
+				log.Printf("Error sending HTTP POST request: %s", err)
+				continue
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != 201 {
+				log.Printf("pi-vitrine server returned an error code %d", response.StatusCode)
+				if response.StatusCode == 400 {
+					body, _ := io.ReadAll(response.Body)
+					log.Print("pi-vitrine client sent a system data POST that was not accepted: ", body)
+					return
+				}
+			}
+			<-t.C
+
+		}
+	}
+}
+
+// Send indoor climate data to the pi-vitrine server every 30 minutes
+func SendIndoorClimateData(clientName string, serverAddress string, ctx context.Context) {
+
+	t := time.NewTicker(30 * time.Minute)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			envData, err := GetEnvData()
+
+			// convert to the units the server expects!
+			err = envData.Temperature.Set("K")
+			if err != nil {
+				log.Print("Error converting temperature to K: ", err)
+				continue
+			}
+
+			err = envData.Pressure.Set("Pa")
+			if err != nil {
+				log.Print("Error converting pressure to Pa: ", err)
+				continue
+			}
+
+			err = envData.Humidity.Set("%")
+			if err != nil {
+				log.Print("Error converting Relative Humidity to %: ", err)
+				continue
+			}
+
+			climateData := cher.IndoorClimate{
+				Name:             clientName,
+				AirTemp:          float64(envData.Temperature),
+				Pressure:         float64(envData.Pressure),
+				RelativeHumidity: float64(envData.Humidity),
+			}
+
+			jsonData, err := json.Marshal(climateData)
+
+			if err != nil {
+				log.Print("Error json marshalling: ", err)
+				continue
+			}
+
+			request, err := http.NewRequest("POST", serverAddress, bytes.NewBuffer(jsonData))
+
+			if err != nil {
+				log.Print("Error creating HTTP POST request: ", err)
+				continue
+			}
+
+			request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+			client := http.Client{}
+			response, err := client.Do(request)
+
+			if err != nil {
+				log.Print("Error sending HTTP POST request: ", err)
+				continue
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != 201 {
+				log.Printf("pi-vitrine server returned an error code %d", response.StatusCode)
+				if response.StatusCode == 400 {
+					body, _ := io.ReadAll(response.Body)
+					log.Print("pi-vitrine client sent an indoor_climate POST that was not accepted: ", body)
+					return
+				}
+			}
+			<-t.C
+		}
+	}
 }

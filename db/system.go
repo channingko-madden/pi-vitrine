@@ -5,7 +5,7 @@ import (
 )
 
 // Pi system information
-type SystemData struct {
+type systemData struct {
 	Id        int
 	DeviceId  int
 	CPUTemp   float64
@@ -15,7 +15,8 @@ type SystemData struct {
 
 type SystemRepository interface {
 	CreateSystem(system *cher.System) error
-	GetAllSystemData(macAddr string) ([]cher.System, error)
+	// Retrieve all system data for a given device
+	GetAllSystemData(deviceName string) ([]cher.System, error)
 }
 
 func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
@@ -39,8 +40,6 @@ func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
 
 func (r *PostgresDeviceRepository) GetAllSystemData(deviceName string) ([]cher.System, error) {
 
-	var allData []cher.System
-
 	// Get the device id using the device name
 	deviceId, err := r.getDeviceId(deviceName)
 
@@ -60,8 +59,10 @@ func (r *PostgresDeviceRepository) GetAllSystemData(deviceName string) ([]cher.S
 		return nil, err
 	}
 	defer rows.Close()
+
+	var allData []cher.System
 	for rows.Next() {
-		systemData := SystemData{}
+		systemData := systemData{}
 		err = rows.Scan(&systemData.CPUTemp, &systemData.GPUTemp, &systemData.CreatedAt)
 		if err != nil {
 			return nil, err
