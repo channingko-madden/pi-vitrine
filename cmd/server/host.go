@@ -157,3 +157,33 @@ func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+// POST "indoor_climate"
+// A non html endpoint
+func CreateIndoorClimateDataHandler(w http.ResponseWriter, r *http.Request) *internal.HostError {
+	decoder := json.NewDecoder(r.Body)
+
+	var data cher.IndoorClimate
+	err := decoder.Decode(&data)
+
+	if err != nil {
+		return &internal.HostError{
+			Error:   err,
+			Message: "Could not decode json body",
+			Code:    400,
+		}
+	}
+
+	err = Db.CreateIndoorClimate(&data)
+
+	if err != nil {
+		return &internal.HostError{
+			Error:   err,
+			Message: "Could not store system data",
+			Code:    500,
+		}
+	} else {
+		w.WriteHeader(201)
+		return nil
+	}
+}

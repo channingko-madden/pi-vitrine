@@ -32,9 +32,9 @@ func main() {
 		log.Fatalf("Must provide a valid URI for the pi-vitrine server\n%s", err)
 	}
 
-	addr := *clientAddressFlag + ":" + strconv.Itoa(*clientPortFlag)
+	clientAddr := *clientAddressFlag + ":" + strconv.Itoa(*clientPortFlag)
 
-	fmt.Printf("pi-vitrine client running on %s\n", addr)
+	fmt.Printf("pi-vitrine client running on %s\n", clientAddr)
 
 	// One context to cancel all goroutines
 	ctx, cancel := context.WithCancel(context.Background())
@@ -42,11 +42,14 @@ func main() {
 	go BlinkLED(ctx)
 
 	// start sending system data
-	go SendSystemData(*clientNameFlag, *serverAddressFlag, ctx)
+	go SendSystemData(*clientNameFlag, *serverAddressFlag+"/system", ctx)
+
+	// start sending indoor climate data
+	go SendIndoorClimateData(*clientNameFlag, *serverAddressFlag+"/indoor_climate", ctx)
 
 	http.HandleFunc("GET /", HomePageHandler)
 	http.HandleFunc("GET /env", GetEnvHandler)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(clientAddr, nil))
 
 	cancel() // stop goroutines
 }

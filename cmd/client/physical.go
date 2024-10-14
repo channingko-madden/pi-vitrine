@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+
 	"github.com/channingko-madden/pi-vitrine/internal"
 	"github.com/channingko-madden/pi-vitrine/internal/cher"
 	"github.com/channingko-madden/pi-vitrine/internal/system"
-	"log"
-	"net/http"
+
+	"time"
 
 	"periph.io/x/conn/v3/gpio"
 	"periph.io/x/conn/v3/i2c/i2creg"
@@ -16,7 +20,6 @@ import (
 	"periph.io/x/devices/v3/bmxx80"
 	"periph.io/x/host/v3"
 	"periph.io/x/host/v3/rpi"
-	"time"
 )
 
 func init() {
@@ -130,12 +133,89 @@ func SendSystemData(clientName string, serverAddress string, ctx context.Context
 			if response.StatusCode != 201 {
 				log.Printf("pi-vitrine server returned an error code %d", response.StatusCode)
 				if response.StatusCode == 400 {
-					log.Print("pi-vitrine client is not POSTing valid system data json!")
+					body, _ := io.ReadAll(response.Body)
+					log.Print("pi-vitrine client sent a system data POST that was not accepted: ", body)
 					return
 				}
 			}
 			<-t.C
 
+		}
+	}
+}
+
+// Send indoor climate data to the pi-vitrine server every 30 minutes
+func SendIndoorClimateData(clientName string, serverAddress string, ctx context.Context) {
+
+	t := time.NewTicker(30 * time.Minute)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			envData, err := GetEnvData()
+
+			// convert to the units the server expects!
+			err = envData.Temperature.Set("K")
+			if err != nil {
+				log.Print("Error converting temperature to K: ", err)
+				continue
+			}
+
+			err = envData.Pressure.Set("Pa")
+			if err != nil {
+				log.Print("Error converting pressure to Pa: ", err)
+				continue
+			}
+
+			err = envData.Humidity.Set("%")
+			if err != nil {
+				log.Print("Error converting Relative Humidity to %: ", err)
+				continue
+			}
+
+			climateData := cher.IndoorClimate{
+				Name:             clientName,
+				AirTemp:          float64(envData.Temperature),
+				Pressure:         float64(envData.Pressure),
+				RelativeHumidity: float64(envData.Humidity),
+			}
+
+			jsonData, err := json.Marshal(climateData)
+
+			if err != nil {
+				log.Print("Error json marshalling: ", err)
+				continue
+			}
+
+			request, err := http.NewRequest("POST", serverAddress, bytes.NewBuffer(jsonData))
+
+			if err != nil {
+				log.Print("Error creating HTTP POST request: ", err)
+				continue
+			}
+
+			request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+			client := http.Client{}
+			response, err := client.Do(request)
+
+			if err != nil {
+				log.Print("Error sending HTTP POST request: ", err)
+				continue
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != 201 {
+				log.Printf("pi-vitrine server returned an error code %d", response.StatusCode)
+				if response.StatusCode == 400 {
+					body, _ := io.ReadAll(response.Body)
+					log.Print("pi-vitrine client sent an indoor_climate POST that was not accepted: ", body)
+					return
+				}
+			}
+			<-t.C
 		}
 	}
 }

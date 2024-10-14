@@ -42,5 +42,6 @@ func main() {
 	http.HandleFunc("GET /device", GetAllDevicesHandler)
 	http.HandleFunc("GET /device/{name}", GetDeviceHandler)
 	http.HandleFunc("POST /device", CreateDeviceHandler)
+	http.Handle("POST /indoor_climate", internal.HostErrorHandler(CreateIndoorClimateDataHandler))
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
