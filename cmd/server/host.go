@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/channingko-madden/pi-vitrine/db"
 	"github.com/channingko-madden/pi-vitrine/internal"
@@ -135,7 +137,7 @@ func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	existingDevice, err := Db.GetDevice(deviceName)
 	if err != nil {
 		if _, ok := err.(*db.DeviceDoesNotExistError); !ok {
-			log.Default().Print(err)
+			log.Print(err)
 			internal.ErrorMessage(w, fmt.Sprintf("Error saving device %s", deviceName))
 			return
 		}
@@ -150,7 +152,7 @@ func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	err = Db.CreateDevice(&device)
 
 	if err != nil {
-		log.Default().Print(err)
+		log.Print(err)
 		internal.ErrorMessage(w, fmt.Sprintf("Error saving device %s", deviceName))
 	} else {
 		internal.InfoMessage(w, fmt.Sprintf("Created device %s", deviceName))
@@ -185,5 +187,54 @@ func CreateIndoorClimateDataHandler(w http.ResponseWriter, r *http.Request) *int
 	} else {
 		w.WriteHeader(201)
 		return nil
+	}
+}
+
+// GET "indoor_climate"
+// An html endpoint
+// Path parameters:
+//   - "device_name"
+//
+// Query parameters:
+//   - "days" (The number of past days to get data for. Will be > 0 enforced by client, error if it
+//     is not)
+func GetIndoorClimateChartHandler(w http.ResponseWriter, r *http.Request) {
+	deviceName := r.PathValue("device_name")
+
+	if len(deviceName) == 0 {
+		internal.ErrorMessage(w, "URL path is missing 'device_name'")
+		return
+	}
+
+	days, err := strconv.Atoi(r.URL.Query().Get("days"))
+
+	if err != nil {
+		internal.ErrorMessage(w, "URL query is missing an integer value for 'days'")
+		return
+	}
+
+	endTime := time.Now()
+	startTime := endTime.AddDate(0, 0, -days)
+
+	devices, err := Db.GetIndoorClimateData(deviceName, startTime, endTime)
+	if err != nil {
+		if dneError, ok := err.(*db.DeviceDoesNotExistError); ok {
+			internal.ErrorMessage(w, dneError.Error())
+		} else {
+			log.Print(err)
+			internal.ErrorMessage(w, "Server error retrieving climate data")
+		}
+		return
+	}
+
+	if len(devices) == 0 {
+		internal.InfoMessage(w, "There is no indoor climate data available")
+		return
+	}
+
+	err = chartIndoorClimate(w, devices)
+	if err != nil {
+		internal.ErrorMessage(w, "Server error rendering graph")
+		log.Print(err)
 	}
 }

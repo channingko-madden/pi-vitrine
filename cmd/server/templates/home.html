@@ -13,6 +13,7 @@ Title: home.html
         <link href="/css/960.css" type="text/css" rel="stylesheet" />
         <script src="https://unpkg.com/htmx.org@2.0.2"></script>
         <script src="https://unpkg.com/htmx-ext-path-params@2.0.0/path-params.js"></script>
+        <script src="https://go-echarts.github.io/go-echarts-assets/assets/echarts.min.js"></script>
 </head>
 
 <body>
@@ -51,6 +52,18 @@ Title: home.html
                         </form>
                         <div id="system_data"></div>
                 </div> <!-- System data part of UI -->
+                <div class="grid_8">
+                        <div hx-ext="path-params">
+                                <form hx-get="/indoor_climate/{device_name}" hx-include="[device_name='device_name']"
+                                        hx-target="#indoor_climate_fig">
+                                        <input type="search" name="device_name" placeholder="Device name" minlength="1"
+                                                required />
+                                        <input type="search" name="days" placeholder="Number of days" min=1 required />
+                                        <input type="submit" value="Get Indoor Climate Data" />
+                                </form>
+                        </div>
+                        <div id="indoor_climate_fig"></div>
+                </div> <!-- Indoor Climate part of UI -->
         </div>
 </body>
 
