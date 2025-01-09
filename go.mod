@@ -3,6 +3,7 @@ module github.com/channingko-madden/pi-vitrine
 go 1.23.0
 
 require (
+	github.com/go-echarts/go-echarts/v2 v2.4.5
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/testcontainers/testcontainers-go v0.32.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.32.0

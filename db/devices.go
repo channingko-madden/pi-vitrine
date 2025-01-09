@@ -115,7 +115,7 @@ func (r *PostgresDeviceRepository) getDeviceId(deviceName string) (int, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, &DeviceDoesNotExistError{}
+			return 0, &DeviceDoesNotExistError{Name: deviceName}
 		}
 		return 0, err
 	}
