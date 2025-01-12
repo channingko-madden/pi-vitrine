@@ -5,16 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
-// Pass URL of server as a CLI arg
 func main() {
 
-	var clientAddressFlag = flag.String("client_address", "localhost", "IP address for the client homepage")
-	var clientPortFlag = flag.Int("client_port", 9000, "Port number for the client homepage")
+	var clientAddressFlag = flag.String("client_address", "localhost:9000", "Network address for the client homepage")
 
 	var clientNameFlag = flag.String("name", "", "Name of the client")
 
@@ -22,19 +19,22 @@ func main() {
 
 	flag.Parse()
 
+	// Flag validation
 	if len(*clientNameFlag) == 0 {
 		log.Fatal("Must provide the name of the client")
 	}
 
 	if len(*serverAddressFlag) == 0 {
 		log.Fatal("Must provide the pi-vitrine server address")
-	} else if _, err := url.ParseRequestURI(*serverAddressFlag); err != nil {
-		log.Fatalf("Must provide a valid URI for the pi-vitrine server\n%s", err)
+	} else if _, _, err := net.SplitHostPort(*serverAddressFlag); err != nil {
+		log.Fatalf("Must provide a valid network address for the pi-vitrine server\n%s", err)
 	}
 
-	clientAddr := *clientAddressFlag + ":" + strconv.Itoa(*clientPortFlag)
+	if _, _, err := net.SplitHostPort(*clientAddressFlag); err != nil {
+		log.Fatalf("Must provide a valid network address for the client\n%s", err)
+	}
 
-	fmt.Printf("pi-vitrine client running on %s\n", clientAddr)
+	fmt.Printf("pi-vitrine client running on %s\n", *clientAddressFlag)
 
 	// One context to cancel all goroutines
 	ctx, cancel := context.WithCancel(context.Background())
@@ -49,7 +49,7 @@ func main() {
 
 	http.HandleFunc("GET /", HomePageHandler)
 	http.HandleFunc("GET /env", GetEnvHandler)
-	log.Fatal(http.ListenAndServe(clientAddr, nil))
+	log.Fatal(http.ListenAndServe(*clientAddressFlag, nil))
 
 	cancel() // stop goroutines
 }
