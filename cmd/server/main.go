@@ -19,7 +19,7 @@ var Db db.Repository
 // Sets up connection to the database (doesn't open it!)
 // Opening occurs lazily
 func init() {
-	connection := "user=pi-vitrine dbname=pi_vitrine password=pi-vitrine"
+	connection := "user=pi-vitrine dbname=pi_vitrine password=pi-vitrine host=localhost"
 
 	Db = db.NewPostgresDeviceRepository(connection)
 }
