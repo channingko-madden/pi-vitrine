@@ -42,10 +42,10 @@ func main() {
 	go BlinkLED(ctx)
 
 	// start sending system data
-	go SendSystemData(*clientNameFlag, *serverAddressFlag+"/system", ctx)
+	go SendSystemData(*clientNameFlag, "http://"+*serverAddressFlag+"/system", ctx)
 
 	// start sending indoor climate data
-	go SendIndoorClimateData(*clientNameFlag, *serverAddressFlag+"/indoor_climate", ctx)
+	go SendIndoorClimateData(*clientNameFlag, "http://"+*serverAddressFlag+"/indoor_climate", ctx)
 
 	http.HandleFunc("GET /", HomePageHandler)
 	http.HandleFunc("GET /env", GetEnvHandler)

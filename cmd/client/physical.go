@@ -23,7 +23,10 @@ import (
 )
 
 func init() {
-	host.Init() // init needs to be outside the goroutine
+	// init needs to be outside the goroutine
+	if _, err := host.Init(); err != nil {
+		panic(err)
+	}
 }
 
 func BlinkLED(ctx context.Context) {
@@ -42,13 +45,6 @@ func BlinkLED(ctx context.Context) {
 
 // Assumes host has been Init prior to calling this function!
 func GetEnvData() (physic.Env, error) {
-	var env physic.Env
-
-	if _, err := host.Init(); err != nil {
-		log.Println(err)
-		return physic.Env{}, err
-	}
-
 	bus, err := i2creg.Open("1")
 	if err != nil {
 		log.Println(err)
@@ -65,6 +61,7 @@ func GetEnvData() (physic.Env, error) {
 	defer dev.Halt()
 
 	// Read data
+	var env physic.Env
 	if err = dev.Sense(&env); err != nil {
 		log.Println(err)
 		return physic.Env{}, err
@@ -156,7 +153,11 @@ func SendIndoorClimateData(clientName string, serverAddress string, ctx context.
 		default:
 			envData, err := GetEnvData()
 
-			// convert to the units the server expects!
+			if err != nil {
+				log.Print("Error reading indoor climate data: ", err)
+			}
+
+			// convert to the units the server expects! K, Pa, %
 			err = envData.Temperature.Set("K")
 			if err != nil {
 				log.Print("Error converting temperature to K: ", err)
