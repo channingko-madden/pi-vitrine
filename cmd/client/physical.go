@@ -23,7 +23,10 @@ import (
 )
 
 func init() {
-	host.Init() // init needs to be outside the goroutine
+	// init needs to be outside the goroutine
+	if _, err := host.Init(); err != nil {
+		panic(err)
+	}
 }
 
 func BlinkLED(ctx context.Context) {
@@ -41,14 +44,8 @@ func BlinkLED(ctx context.Context) {
 }
 
 // Assumes host has been Init prior to calling this function!
+// Return Env data in units °C, kPa and % of relative humidity
 func GetEnvData() (physic.Env, error) {
-	var env physic.Env
-
-	if _, err := host.Init(); err != nil {
-		log.Println(err)
-		return physic.Env{}, err
-	}
-
 	bus, err := i2creg.Open("1")
 	if err != nil {
 		log.Println(err)
@@ -65,6 +62,7 @@ func GetEnvData() (physic.Env, error) {
 	defer dev.Halt()
 
 	// Read data
+	var env physic.Env
 	if err = dev.Sense(&env); err != nil {
 		log.Println(err)
 		return physic.Env{}, err
@@ -156,30 +154,16 @@ func SendIndoorClimateData(clientName string, serverAddress string, ctx context.
 		default:
 			envData, err := GetEnvData()
 
-			// convert to the units the server expects!
-			err = envData.Temperature.Set("K")
 			if err != nil {
-				log.Print("Error converting temperature to K: ", err)
-				continue
+				log.Print("Error reading indoor climate data: ", err)
 			}
 
-			err = envData.Pressure.Set("Pa")
-			if err != nil {
-				log.Print("Error converting pressure to Pa: ", err)
-				continue
-			}
-
-			err = envData.Humidity.Set("%")
-			if err != nil {
-				log.Print("Error converting Relative Humidity to %: ", err)
-				continue
-			}
-
+			// convert to the units the server expects! K, Pa, %
 			climateData := cher.IndoorClimate{
 				Name:             clientName,
-				AirTemp:          float64(envData.Temperature),
-				Pressure:         float64(envData.Pressure),
-				RelativeHumidity: float64(envData.Humidity),
+				AirTemp:          float64(envData.Temperature) / float64(physic.Kelvin),
+				Pressure:         float64(envData.Pressure) / float64(float64(physic.Pascal)),
+				RelativeHumidity: float64(envData.Humidity) / float64(physic.PercentRH),
 			}
 
 			jsonData, err := json.Marshal(climateData)

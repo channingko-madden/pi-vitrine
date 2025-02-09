@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS devices (
 CREATE TABLE IF NOT EXISTS indoor_climate (
 	id serial primary key,
 	device_id       integer not null,
-	air_temp	real not null default 0,
-	pressure 	real not null default 0,
-	relative_humidity real not null default 0,
+	air_temp	real not null default 0, -- Kelvin
+	pressure 	real not null default 0, -- Pascal
+	relative_humidity real not null default 0, -- 0 - 100%
 	created_at 	timestamp not null default now()
 );
