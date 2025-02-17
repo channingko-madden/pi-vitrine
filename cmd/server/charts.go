@@ -73,7 +73,7 @@ func chartIndoorClimate(w http.ResponseWriter, data []cher.IndoorClimate) error 
 	for i, data := range data {
 		xdata[i] = data.CreatedAt.Format(time.DateTime)
 		tempData[i] = opts.LineData{Value: internal.KelvinToCelcius(data.AirTemp)}
-		pressureData[i] = opts.LineData{Value: data.Pressure}
+		pressureData[i] = opts.LineData{Value: internal.PascalToMillibar(data.Pressure)}
 		rhData[i] = opts.LineData{Value: data.RelativeHumidity}
 	}
 
@@ -90,7 +90,7 @@ func chartIndoorClimate(w http.ResponseWriter, data []cher.IndoorClimate) error 
 
 	pressureLine := charts.NewLine()
 	pressureLine.Renderer = newChartRender(pressureLine, pressureLine.Validate)
-	pressureLine.SetXAxis(xdata).AddSeries("Pressure (bar)", pressureData)
+	pressureLine.SetXAxis(xdata).AddSeries("Pressure (Millibar)", pressureData)
 
 	err = pressureLine.Render(&buf)
 	if err != nil {
