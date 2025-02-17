@@ -9,8 +9,7 @@ Title: home.html
         <meta name="description" content="Homepage for pi-vitrine server" />
         <meta http-equiv="author" content="Channing Ko-Madden" />
         <title>Homepage</title>
-        <link href="/css/home.css" type="text/css" rel="stylesheet" />
-        <link href="/css/960.css" type="text/css" rel="stylesheet" />
+        <link href="/styles/home.css" type="text/css" rel="stylesheet" />
         <script src="https://unpkg.com/htmx.org@2.0.2"></script>
         <script src="https://unpkg.com/htmx-ext-path-params@2.0.0/path-params.js"></script>
         <script src="https://go-echarts.github.io/go-echarts-assets/assets/echarts.min.js"></script>
@@ -18,52 +17,63 @@ Title: home.html
 
 <body>
         <div class="container_12">
-                <div class="grid_12">
+                <div class="grid_12 title">
                         <h1>pi-vitrine</h1>
                 </div>
-                <div class="grid_4">
-                        <form hx-get="/device" hx-target="#devices_list">
-                                <input type="submit" value="List All Devices" />
-                        </form>
-                        <div id="devices_list"></div>
-                        <div hx-ext="path-params">
+                <div class="grid_12">
+                        <div class="grid_6 alpha" hx-ext="path-params">
+                                <form hx-get="/device" hx-target="#device_info">
+                                        <input type="submit" value="List All Devices" />
+                                </form>
                                 <form class="search-container" hx-get="/device/{name}" hx-include="[name='name']"
                                         hx-target="#device_info">
                                         <input type="search" name="name" placeholder="Device name" minlength="1"
                                                 required />
                                         <input type="submit" value="Get Device Info" />
                                 </form>
-                        </div>
-
-                        <form class="search-container" hx-post="/device" hx-target="#device_info">
-                                <input type="search" name="device_name" placeholder="Device name" minlength="1"
-                                        required />
-                                <input type="submit" value="Register Device" />
-                        </form>
-
-                        <div id="device_info"></div>
-                </div> <!-- Device part of UI -->
-
-                <div class="grid_8">
-                        <form hx-get="/system" hx-target="#system_data">
-                                <input type="search" name="device_name" placeholder="Device name" minlength="1"
-                                        required />
-                                <input type="submit" value="Get System Data" />
-                        </form>
-                        <div id="system_data"></div>
-                </div> <!-- System data part of UI -->
-                <div class="grid_8">
-                        <div hx-ext="path-params">
-                                <form hx-get="/indoor_climate/{device_name}" hx-include="[device_name='device_name']"
-                                        hx-target="#indoor_climate_fig">
+                                <form class="search-container" hx-post="/device" hx-target="#device_info">
                                         <input type="search" name="device_name" placeholder="Device name" minlength="1"
                                                 required />
-                                        <input type="search" name="days" placeholder="Number of days" min=1 required />
-                                        <input type="submit" value="Get Indoor Climate Data" />
+                                        <input type="submit" value="Register Device" />
                                 </form>
-                        </div>
-                        <div id="indoor_climate_fig"></div>
-                </div> <!-- Indoor Climate part of UI -->
+                        </div> <!-- Inputs grid -->
+
+                        <div class="grid_6 omega" id="device_info"></div> <!-- Data display grid -->
+                </div> <!-- Device part of UI -->
+
+                <div class="grid_12 clear-row"></div>
+                <div></div>
+
+                <div class="grid_12">
+                        <div class="grid_4 alpha">
+                                <div hx-ext="path-params">
+                                        <form hx-get="/system/{device_name}" hx-include="[device_name='device_name']"
+                                                hx-target="#system_data">
+                                                <input type="search" name="device_name" placeholder="Device name"
+                                                        minlength="1" required />
+                                                <input type="search" name="days" placeholder="Number of days" min=1
+                                                        required />
+                                                <input type="submit" value="Get System Data" />
+                                        </form>
+                                </div>
+                                <div hx-ext="path-params">
+                                        <form hx-get="/indoor_climate/{device_name}"
+                                                hx-include="[device_name='device_name']"
+                                                hx-target="#indoor_climate_fig">
+                                                <input type="search" name="device_name" placeholder="Device name"
+                                                        minlength="1" required />
+                                                <input type="search" name="days" placeholder="Number of days" min=1
+                                                        required />
+                                                <input type="submit" value="Get Indoor Climate Data" />
+                                        </form>
+                                </div>
+                        </div> <!-- System data part of UI -->
+                        <div class="grid_8 omega">
+                                <div id="system_data"></div>
+                                <div> </div>
+                                <div id="indoor_climate_fig"></div>
+                        </div> <!-- Indoor Climate part of UI -->
+                </div>
         </div>
 </body>
 

@@ -1,7 +1,9 @@
 package cher
 
+import "time"
+
 // Represent device information
 type Device struct {
 	Name      string
-	CreatedAt string
+	CreatedAt time.Time
 }

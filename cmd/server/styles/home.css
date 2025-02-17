@@ -1,3 +1,5 @@
+@import url("960.css");
+
 /* Styling for the search container */
 .search-container {
     text-align: center;
@@ -6,4 +8,38 @@
 .search-container > input {
   display: inline-block;
   float: left;
+}
+
+/* Styling for titles */
+.title {
+	height: 90%;
+	width: 100%;
+	display: flex;
+}	align-items: center;
+	justify-content: center;
+}
+
+.title > h1 {
+	display: inline-block;
+	width: 250px;
+	text-align: center;
+}
+
+.clear-row {
+  height: 100px;
+}
+
+.scroll-table > th {
+  font-weight: bold;
+}
+
+.scroll-table > thead {
+  position: sticky;
+  top: 0;
+  z-index: 1; /*keep on top of other rows*/
+}
+
+.scroll-table > tbody {
+  overflow-y: auto;
+  max-height: 300px; /* Adjustable */
 }

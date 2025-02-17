@@ -4,18 +4,22 @@ Title: list_devices.html
 @brief List all of the devices within a slice of devices
 -->
 <div>
-        <table>
+        <table class="scroll-table">
                 <!-- Headers -->
-                <tr>
-                        <th>Device Name</th>
-                        <th>Created At</th>
-                </tr>
+                <thead>
+                        <tr>
+                                <th>Device Name</th>
+                                <th>Created At</th>
+                        </tr>
+                </thead>
                 <!-- Rows of data -->
-                {{ range . }} <!-- . is a slice of devices -->
-                <tr>
-                        <td>{{ .Name }}</td>
-                        <td>{{ .CreatedAt }}</td>
-                </tr>
-                {{ end }}
+                <tbody>
+                        {{ range . }} <!-- . is a slice of devices -->
+                        <tr>
+                                <td>{{ .Name }}</td>
+                                <td>{{ .CreatedAt }}</td>
+                        </tr>
+                        {{ end }}
+                </tbody>
         </table>
 </div>

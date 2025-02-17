@@ -9,10 +9,16 @@ import (
 
 // Represent device information
 // Devices are identified by their unique name
-type Device struct {
+type device struct {
 	Id        int
 	Name      string
 	CreatedAt string
+}
+
+func newDevice(dev *cher.Device) device {
+	return device{
+		Name: dev.Name,
+	}
 }
 
 type DeviceDoesNotExistError struct {
@@ -37,8 +43,17 @@ func (r *PostgresDeviceRepository) CreateDevice(deviceData *cher.Device) error {
 		return err
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(deviceData.Name).Scan(&deviceData.CreatedAt)
-	return err
+
+	dev := newDevice(deviceData)
+	err = stmt.QueryRow(dev.Name).Scan(&dev.CreatedAt)
+
+	if err != nil {
+		return err
+	}
+
+	deviceData.CreatedAt = parseCreatedTime(dev.CreatedAt)
+
+	return nil
 }
 
 func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, error) {
@@ -51,8 +66,8 @@ func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, er
 	}
 	defer stmt.Close()
 
-	var device Device
-	err = stmt.QueryRow(deviceName).Scan(&device.Id, &device.CreatedAt)
+	var dev device
+	err = stmt.QueryRow(deviceName).Scan(&dev.Id, &dev.CreatedAt)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -64,7 +79,7 @@ func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, er
 
 	outDevice := cher.Device{
 		Name:      deviceName,
-		CreatedAt: device.CreatedAt,
+		CreatedAt: parseCreatedTime(dev.CreatedAt),
 	}
 
 	return outDevice, nil
@@ -90,12 +105,12 @@ func (r *PostgresDeviceRepository) GetAllDevices() ([]cher.Device, error) {
 	}
 
 	for rows.Next() {
-		var device cher.Device
-		if err := rows.Scan(&device.Name, &device.CreatedAt); err != nil {
+		var dev device
+		if err := rows.Scan(&dev.Name, &dev.CreatedAt); err != nil {
 			return nil, err
 		}
 
-		devices = append(devices, device)
+		devices = append(devices, cher.Device{Name: dev.Name, CreatedAt: parseCreatedTime(dev.CreatedAt)})
 	}
 
 	return devices, nil

@@ -36,9 +36,9 @@ func main() {
 	fmt.Printf("pi-vitrine server running on %s\n", addr)
 
 	http.HandleFunc("GET /", HomePageHandler)
-	http.Handle("GET /css/", http.StripPrefix("/css/", http.FileServer(http.FS(content))))
+	http.Handle("GET /styles/", http.FileServer(http.FS(content)))
 	http.Handle("POST /system", internal.HostErrorHandler(CreateSystemDataHandler))
-	http.HandleFunc("GET /system", GetSystemDataHandler)
+	http.HandleFunc("GET /system/{device_name}", GetSystemDataHandler)
 	http.HandleFunc("GET /device", GetAllDevicesHandler)
 	http.HandleFunc("GET /device/{name}", GetDeviceHandler)
 	http.HandleFunc("POST /device", CreateDeviceHandler)

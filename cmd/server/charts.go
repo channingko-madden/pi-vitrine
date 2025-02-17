@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/channingko-madden/pi-vitrine/internal"
 	"github.com/channingko-madden/pi-vitrine/internal/cher"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -70,8 +71,8 @@ func chartIndoorClimate(w http.ResponseWriter, data []cher.IndoorClimate) error 
 	pressureData := make([]opts.LineData, len(data))
 	rhData := make([]opts.LineData, len(data))
 	for i, data := range data {
-		xdata[i] = data.CreatedTime().Format(time.DateTime)
-		tempData[i] = opts.LineData{Value: data.AirTemp}
+		xdata[i] = data.CreatedAt.Format(time.DateTime)
+		tempData[i] = opts.LineData{Value: internal.KelvinToCelcius(data.AirTemp)}
 		pressureData[i] = opts.LineData{Value: data.Pressure}
 		rhData[i] = opts.LineData{Value: data.RelativeHumidity}
 	}
@@ -101,6 +102,42 @@ func chartIndoorClimate(w http.ResponseWriter, data []cher.IndoorClimate) error 
 	rhLine.SetXAxis(xdata).AddSeries("Relative Humidity (%)", rhData)
 
 	err = rhLine.Render(&buf)
+	if err != nil {
+		return err
+	}
+
+	w.Write(buf.Bytes())
+
+	return nil
+}
+
+func chartSystemData(w http.ResponseWriter, data []cher.System) error {
+	// time
+	xdata := make([]string, len(data))
+	// system
+	cpuTempData := make([]opts.LineData, len(data))
+	gpuTempData := make([]opts.LineData, len(data))
+	for i, data := range data {
+		xdata[i] = data.CreatedAt.Format(time.DateTime)
+		cpuTempData[i] = opts.LineData{Value: internal.KelvinToCelcius(data.CPUTemp)}
+		gpuTempData[i] = opts.LineData{Value: internal.KelvinToCelcius(data.GPUTemp)}
+	}
+
+	var buf bytes.Buffer
+	cpuTempLine := charts.NewLine()
+	cpuTempLine.Renderer = newChartRender(cpuTempLine, cpuTempLine.Validate)
+	cpuTempLine.SetXAxis(xdata).AddSeries("CPU Temperature (C)", cpuTempData)
+
+	err := cpuTempLine.Render(&buf)
+	if err != nil {
+		return err
+	}
+
+	gpuTempLine := charts.NewLine()
+	gpuTempLine.Renderer = newChartRender(gpuTempLine, gpuTempLine.Validate)
+	gpuTempLine.SetXAxis(xdata).AddSeries("GPU Temperature (C)", gpuTempData)
+
+	err = gpuTempLine.Render(&buf)
 	if err != nil {
 		return err
 	}

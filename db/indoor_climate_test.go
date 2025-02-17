@@ -27,7 +27,7 @@ func TestCreateIndoorClimate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(climateData.CreatedAt) == 0 {
+	if climateData.CreatedAt.IsZero() {
 		t.Error("CreatedAt missing from creating climate data")
 	}
 
@@ -94,9 +94,9 @@ func TestGetIndoorClimateData(t *testing.T) {
 	midIndex := len(expectedData) / 2
 	t.Log("midIndex: ", midIndex)
 
-	startTime := expectedData[0].CreatedTime()
-	midTime := expectedData[midIndex].CreatedTime()
-	endTime := expectedData[len(expectedData)-1].CreatedTime()
+	startTime := expectedData[0].CreatedAt
+	midTime := expectedData[midIndex].CreatedAt
+	endTime := expectedData[len(expectedData)-1].CreatedAt
 
 	t.Log("startTime: ", startTime.Format(time.RFC3339Nano))
 	t.Log("midTime: ", midTime.Format(time.RFC3339Nano))

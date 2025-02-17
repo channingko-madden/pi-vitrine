@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 type goodDb struct {
@@ -18,7 +19,7 @@ func (goodDb) CreateSystem(system *cher.System) error {
 	return nil
 }
 
-func (goodDb) GetAllSystemData(macAddr string) ([]cher.System, error) {
+func (goodDb) GetSystemData(deviceName string, start time.Time, end time.Time) ([]cher.System, error) {
 	return []cher.System{
 		{
 			Name:    "test",
@@ -39,6 +40,21 @@ func (goodDb) GetAllDevices() ([]cher.Device, error) {
 	return []cher.Device{
 		{
 			Name: "test",
+		},
+	}, nil
+}
+
+func (goodDb) CreateIndoorClimate(climate *cher.IndoorClimate) error {
+	return nil
+}
+
+func (goodDb) GetIndoorClimateData(deviceName string, start time.Time, end time.Time) ([]cher.IndoorClimate, error) {
+	return []cher.IndoorClimate{
+		{
+			Name:             "test",
+			AirTemp:          14.7,
+			Pressure:         15.3,
+			RelativeHumidity: 80.4,
 		},
 	}, nil
 }

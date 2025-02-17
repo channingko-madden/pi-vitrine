@@ -22,7 +22,7 @@ func TestDeviceCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(deviceData.CreatedAt) == 0 {
+	if deviceData.CreatedAt.IsZero() {
 		t.Fatal(err)
 	}
 
@@ -34,7 +34,7 @@ func TestDeviceCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(getData.CreatedAt) == 0 {
+	if getData.CreatedAt.IsZero() {
 		t.Fatal(err)
 	}
 
@@ -62,11 +62,9 @@ func TestCreatingSameDevice(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(deviceData.CreatedAt) == 0 {
+	if deviceData.CreatedAt.IsZero() {
 		t.Fatal(err)
 	}
-
-	deviceData.CreatedAt = ""
 
 	err = testDb.CreateDevice(&deviceData)
 

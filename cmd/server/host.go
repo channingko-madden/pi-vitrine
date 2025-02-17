@@ -54,24 +54,51 @@ func CreateSystemDataHandler(w http.ResponseWriter, r *http.Request) *internal.H
 }
 
 // get "/system" returns system data for a given device
-// Returns html with data summaries
+// Returns html with data plots
+// Path parameters:
+//   - "device_name"
+//
+// Query parameters:
+//   - "days" (The number of past days to get data for. Will be > 0 enforced by client, error if it
+//     is not)
 
 // TODO: query params to limit time range of data
 func GetSystemDataHandler(w http.ResponseWriter, r *http.Request) {
-	deviceName := r.URL.Query().Get("device_name")
+	deviceName := r.PathValue("device_name")
 
-	data, err := Db.GetAllSystemData(deviceName)
-
-	if err != nil || len(data) == 0 {
-		internal.ErrorMessage(w, fmt.Sprintf("System data for device %s not found", deviceName))
-	} else {
-		temp, err := template.ParseFS(content, "templates/system_data.html")
-		if err != nil {
-			panic(err)
-		}
-		temp.Execute(w, data[len(data)-1])
+	if len(deviceName) == 0 {
+		internal.ErrorMessage(w, "URL path is missing 'device_name'")
+		return
 	}
 
+	startTime, endTime, err := calcStartEndTime(w, r)
+
+	if err != nil {
+		return
+	}
+
+	data, err := Db.GetSystemData(deviceName, startTime, endTime)
+
+	if err != nil {
+		if dneError, ok := err.(*db.DeviceDoesNotExistError); ok {
+			internal.ErrorMessage(w, dneError.Error())
+		} else {
+			log.Print(err)
+			internal.ErrorMessage(w, "Server error retrieving system data")
+		}
+		return
+	}
+
+	if len(data) == 0 {
+		internal.InfoMessage(w, "There is no system data available")
+		return
+	}
+
+	err = chartSystemData(w, data)
+	if err != nil {
+		internal.ErrorMessage(w, "Server error rendering graph")
+		log.Print(err)
+	}
 }
 
 // Responds with html
@@ -206,15 +233,11 @@ func GetIndoorClimateChartHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	days, err := strconv.Atoi(r.URL.Query().Get("days"))
+	startTime, endTime, err := calcStartEndTime(w, r)
 
 	if err != nil {
-		internal.ErrorMessage(w, "URL query is missing an integer value for 'days'")
 		return
 	}
-
-	endTime := time.Now()
-	startTime := endTime.AddDate(0, 0, -days)
 
 	devices, err := Db.GetIndoorClimateData(deviceName, startTime, endTime)
 	if err != nil {
@@ -237,4 +260,19 @@ func GetIndoorClimateChartHandler(w http.ResponseWriter, r *http.Request) {
 		internal.ErrorMessage(w, "Server error rendering graph")
 		log.Print(err)
 	}
+}
+
+// Return start time and end time calculated from the "days" query parameter
+// Writes error message and returns and error if "days" query parameter is missing
+func calcStartEndTime(w http.ResponseWriter, r *http.Request) (time.Time, time.Time, error) {
+	days, err := strconv.Atoi(r.URL.Query().Get("days"))
+
+	if err != nil {
+		internal.ErrorMessage(w, "URL query is missing an integer value for 'days'")
+		return time.Time{}, time.Time{}, err
+	}
+
+	endTime := time.Now()
+	startTime := endTime.AddDate(0, 0, -days)
+	return startTime, endTime, nil
 }

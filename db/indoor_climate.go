@@ -14,6 +14,10 @@ type indoorClimate struct {
 	CreatedAt        string  // Unix timestamp "YYYY-MM-DD HH::MM::SS"
 }
 
+func newIndoorClimate(ic *cher.IndoorClimate) indoorClimate {
+	return indoorClimate{AirTemp: ic.AirTemp, Pressure: ic.Pressure, RelativeHumidity: ic.RelativeHumidity}
+}
+
 type IndoorClimateRepository interface {
 	CreateIndoorClimate(climate *cher.IndoorClimate) error
 
@@ -23,7 +27,6 @@ type IndoorClimateRepository interface {
 }
 
 func (r *PostgresDeviceRepository) CreateIndoorClimate(climate *cher.IndoorClimate) error {
-
 	// Get the device id using the device name
 	deviceId, err := r.getDeviceId(climate.Name)
 
@@ -37,8 +40,17 @@ func (r *PostgresDeviceRepository) CreateIndoorClimate(climate *cher.IndoorClima
 		return err
 	}
 	defer stmt.Close()
-	err = stmt.QueryRow(deviceId, climate.AirTemp, climate.Pressure, climate.RelativeHumidity).Scan(&climate.CreatedAt)
-	return err
+
+	ic := newIndoorClimate(climate)
+	err = stmt.QueryRow(deviceId, ic.AirTemp, ic.Pressure, ic.RelativeHumidity).Scan(&ic.CreatedAt)
+
+	if err != nil {
+		return err
+	}
+
+	climate.CreatedAt = parseCreatedTime(ic.CreatedAt)
+
+	return nil
 }
 
 func (r *PostgresDeviceRepository) GetIndoorClimateData(deviceName string, start time.Time, end time.Time) ([]cher.IndoorClimate, error) {
@@ -81,7 +93,7 @@ func (r *PostgresDeviceRepository) GetIndoorClimateData(deviceName string, start
 			AirTemp:          climateData.AirTemp,
 			Pressure:         climateData.Pressure,
 			RelativeHumidity: climateData.RelativeHumidity,
-			CreatedAt:        climateData.CreatedAt,
+			CreatedAt:        parseCreatedTime(climateData.CreatedAt),
 		}
 		allData = append(allData, outData)
 	}
