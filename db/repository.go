@@ -14,7 +14,7 @@ type Repository interface {
 }
 
 type PostgresDeviceRepository struct {
-	conn *sql.DB
+	Conn *sql.DB
 }
 
 func NewPostgresDeviceRepository(connection string) *PostgresDeviceRepository {
@@ -25,7 +25,7 @@ func NewPostgresDeviceRepository(connection string) *PostgresDeviceRepository {
 		panic(err)
 	}
 
-	return &PostgresDeviceRepository{conn: Db}
+	return &PostgresDeviceRepository{Conn: Db}
 
 }
 

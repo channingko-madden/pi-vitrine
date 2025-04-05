@@ -9,6 +9,7 @@ Title: list_devices.html
                 <thead>
                         <tr>
                                 <th>Device Name</th>
+                                <th>Location</th>
                                 <th>Created At</th>
                         </tr>
                 </thead>
@@ -17,6 +18,7 @@ Title: list_devices.html
                         {{ range . }} <!-- . is a slice of devices -->
                         <tr>
                                 <td>{{ .Name }}</td>
+                                <td>{{ .Location }}</td>
                                 <td>{{ .CreatedAt }}</td>
                         </tr>
                         {{ end }}

@@ -12,12 +12,14 @@ import (
 type device struct {
 	Id        int
 	Name      string
+	Location  string
 	CreatedAt string
 }
 
 func newDevice(dev *cher.Device) device {
 	return device{
-		Name: dev.Name,
+		Name:     dev.Name,
+		Location: dev.Location,
 	}
 }
 
@@ -31,21 +33,28 @@ func (e *DeviceDoesNotExistError) Error() string {
 
 type DeviceRepository interface {
 	CreateDevice(device *cher.Device) error
+
+	// Returns a DeviceDoesNotExistError if the device cannot be found
+	UpdateDevice(device *cher.Device) error
+
+	// Returns a DeviceDoesNotExistError if the device cannot be found
 	GetDevice(macAddr string) (cher.Device, error)
+
+	// Returns a DeviceDoesNotExistError if there are no devices
 	GetAllDevices() ([]cher.Device, error)
 }
 
 func (r *PostgresDeviceRepository) CreateDevice(deviceData *cher.Device) error {
 
-	statement := "insert into devices (name) values ($1) returning created_at"
-	stmt, err := r.conn.Prepare(statement)
+	statement := "insert into devices (name, location) values ($1, $2) returning created_at"
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	dev := newDevice(deviceData)
-	err = stmt.QueryRow(dev.Name).Scan(&dev.CreatedAt)
+	err = stmt.QueryRow(dev.Name, dev.Location).Scan(&dev.CreatedAt)
 
 	if err != nil {
 		return err
@@ -56,18 +65,38 @@ func (r *PostgresDeviceRepository) CreateDevice(deviceData *cher.Device) error {
 	return nil
 }
 
+// Device name is not updated
+func (r *PostgresDeviceRepository) UpdateDevice(deviceData *cher.Device) error {
+
+	statement := "update devices set location = $1 where name = $2"
+	stmt, err := r.Conn.Prepare(statement)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	dev := newDevice(deviceData)
+	_, err = stmt.Exec(dev.Location, dev.Name)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, error) {
 
-	statement := "select id, created_at from devices where name = $1"
+	statement := "select id, created_at, location from devices where name = $1"
 
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return cher.Device{}, err
 	}
 	defer stmt.Close()
 
 	var dev device
-	err = stmt.QueryRow(deviceName).Scan(&dev.Id, &dev.CreatedAt)
+	err = stmt.QueryRow(deviceName).Scan(&dev.Id, &dev.CreatedAt, &dev.Location)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -79,6 +108,7 @@ func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, er
 
 	outDevice := cher.Device{
 		Name:      deviceName,
+		Location:  dev.Location,
 		CreatedAt: parseCreatedTime(dev.CreatedAt),
 	}
 
@@ -88,9 +118,9 @@ func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, er
 func (r *PostgresDeviceRepository) GetAllDevices() ([]cher.Device, error) {
 	var devices []cher.Device
 
-	statement := "select name, created_at from devices"
+	statement := "select name, created_at, location from devices"
 
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return nil, err
 	}
@@ -106,11 +136,11 @@ func (r *PostgresDeviceRepository) GetAllDevices() ([]cher.Device, error) {
 
 	for rows.Next() {
 		var dev device
-		if err := rows.Scan(&dev.Name, &dev.CreatedAt); err != nil {
+		if err := rows.Scan(&dev.Name, &dev.CreatedAt, &dev.Location); err != nil {
 			return nil, err
 		}
 
-		devices = append(devices, cher.Device{Name: dev.Name, CreatedAt: parseCreatedTime(dev.CreatedAt)})
+		devices = append(devices, cher.Device{Name: dev.Name, CreatedAt: parseCreatedTime(dev.CreatedAt), Location: dev.Location})
 	}
 
 	return devices, nil
@@ -119,7 +149,7 @@ func (r *PostgresDeviceRepository) GetAllDevices() ([]cher.Device, error) {
 func (r *PostgresDeviceRepository) getDeviceId(deviceName string) (int, error) {
 	statement := "select id from devices where name = $1"
 
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return 0, err
 	}

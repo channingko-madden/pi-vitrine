@@ -6,3 +6,6 @@ import "embed"
 
 //go:embed templates styles
 var content embed.FS
+
+//go:embed migrations/*.sql
+var migrations embed.FS

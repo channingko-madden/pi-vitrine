@@ -35,7 +35,7 @@ func (r *PostgresDeviceRepository) CreateIndoorClimate(climate *cher.IndoorClima
 	}
 
 	statement := "insert into indoor_climate (device_id, air_temp, pressure, relative_humidity) values ($1, $2, $3, $4) returning created_at"
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (r *PostgresDeviceRepository) GetIndoorClimateData(deviceName string, start
 		statement += " and " + timeFilter
 	}
 
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return nil, err
 	}

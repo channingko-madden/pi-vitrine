@@ -38,7 +38,7 @@ func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
 	}
 
 	statement := "insert into system (device_id, temp_cpu, temp_gpu) values ($1, $2, $3) returning created_at"
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (r *PostgresDeviceRepository) GetSystemData(deviceName string, start time.T
 		statement += " and " + timeFilter
 	}
 
-	stmt, err := r.conn.Prepare(statement)
+	stmt, err := r.Conn.Prepare(statement)
 	if err != nil {
 		return nil, err
 	}

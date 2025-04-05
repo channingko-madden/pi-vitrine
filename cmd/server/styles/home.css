@@ -8,6 +8,7 @@
 .search-container > input {
   display: inline-block;
   float: left;
+
 }
 
 /* Styling for titles */
@@ -27,6 +28,10 @@
 
 .clear-row {
   height: 100px;
+}
+
+.space-row {
+  height: 0px;
 }
 
 .scroll-table > th {

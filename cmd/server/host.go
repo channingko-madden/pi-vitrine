@@ -150,13 +150,19 @@ func GetAllDevicesHandler(w http.ResponseWriter, r *http.Request) {
 
 // Responds with html
 func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
-	// deviceName is within the POST form!
+	// device_name is within the POST form!
 	r.ParseForm() // for urlencoded!
 
 	deviceName := r.PostFormValue("device_name")
 
 	if len(deviceName) == 0 {
 		internal.ErrorMessage(w, "POST form is missing 'device_name'")
+		return
+	}
+
+	deviceLocation := r.PostFormValue("device_location")
+	if len(deviceLocation) == 0 {
+		internal.ErrorMessage(w, "POST form is missing 'device_location'")
 		return
 	}
 
@@ -174,7 +180,8 @@ func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	device := cher.Device{
-		Name: deviceName,
+		Name:     deviceName,
+		Location: deviceLocation,
 	}
 	err = Db.CreateDevice(&device)
 
@@ -184,7 +191,54 @@ func CreateDeviceHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		internal.InfoMessage(w, fmt.Sprintf("Created device %s", deviceName))
 	}
+}
 
+/*
+PATCH /device/{name}
+"device_location"
+Responds with html
+*/
+func UpdateDeviceHandler(w http.ResponseWriter, r *http.Request) {
+	deviceName := r.PathValue("name")
+
+	if len(deviceName) == 0 {
+		internal.ErrorMessage(w, "URL path is missing 'name'")
+		return
+	}
+
+	r.ParseForm() // for urlencoded!
+	deviceLocation := r.PostFormValue("device_location")
+	if len(deviceLocation) == 0 {
+		internal.ErrorMessage(w, "POST form is missing 'device_location'")
+		return
+	}
+
+	device, err := Db.GetDevice(deviceName)
+
+	if err != nil {
+		if dneError, ok := err.(*db.DeviceDoesNotExistError); ok {
+			internal.ErrorMessage(w, dneError.Error())
+		} else {
+			internal.ErrorMessage(w, fmt.Sprintf("Server error finding device %s", deviceName))
+		}
+		return
+	}
+
+	if device.Location != deviceLocation {
+		device.Location = deviceLocation
+
+		err = Db.UpdateDevice(&device)
+		if err != nil {
+			internal.ErrorMessage(w, fmt.Sprintf("Server error updating device %s", deviceName))
+			return
+		}
+	}
+
+	temp, err := template.ParseFS(content, "templates/device.html")
+	if err != nil {
+		panic(err)
+	}
+	temp.Execute(w, device)
 }
 
 // POST "indoor_climate"

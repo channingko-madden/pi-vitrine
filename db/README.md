@@ -6,7 +6,7 @@
 createdb pi_vitrine
 sudo -u postgres createuser -P -d pi-vitrine
 
-psql -U {superuser} -f testdata/setup.sql -d pi_vitrine
+psql -U pi-vitrine -f testdata/setup.sql -d pi_vitrine
 
 GRANT CONNECT ON DATABASE pi_vitrine to "pi-vitrine";
 

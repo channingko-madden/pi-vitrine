@@ -9,11 +9,14 @@ Title: home.html
 	<meta name="description" content="Homepage for pi-vitrine client" />
 	<meta http-equiv="author" content="Channing Ko-Madden" />
 	<title>Homepage</title>
-        <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+	<script src="https://unpkg.com/htmx.org@2.0.2"></script>
 </head>
 
 <body>
-	<h1>pi-vitrine</h1>
+	<h1>pi-vitrine </h1>
+	<p>
+		{{ .Name }}
+	</p>
 	<p>
 		CPU Temp (C): {{ .CPUTemp }}
 	</p>
@@ -26,8 +29,8 @@ Title: home.html
 	<p>
 		Pi Info: {{ .PiInfo }}
 	</p>
-        <button hx-get="/env" hx-target="#env_data">Get Env Data</button>
-        <div id="env_data"></div>
+	<button hx-get="/env" hx-target="#env_data">Get Env Data</button>
+	<div id="env_data"></div>
 </body>
 
 </html>

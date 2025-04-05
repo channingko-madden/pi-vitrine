@@ -14,7 +14,8 @@ func TestDeviceCreate(t *testing.T) {
 	testDb := db.NewPostgresDeviceRepository(dbtest.CreateTestDbConnection(t))
 
 	deviceData := cher.Device{
-		Name: "my_name",
+		Name:     "my_name",
+		Location: "my_location",
 	}
 
 	err := testDb.CreateDevice(&deviceData)
@@ -46,15 +47,20 @@ func TestDeviceCreate(t *testing.T) {
 		t.Fail()
 	}
 
+	if getData.Location != deviceData.Location {
+		t.Fail()
+	}
+
 	t.Logf("%+v\n", getData)
 
 }
 
-func TestCreatingSameDevice(t *testing.T) {
+func TestCreatingDeviceSameName(t *testing.T) {
 	testDb := db.NewPostgresDeviceRepository(dbtest.CreateTestDbConnection(t))
 
 	deviceData := cher.Device{
-		Name: "my_name",
+		Name:     "my_name",
+		Location: "my_locations",
 	}
 
 	err := testDb.CreateDevice(&deviceData)
@@ -65,6 +71,8 @@ func TestCreatingSameDevice(t *testing.T) {
 	if deviceData.CreatedAt.IsZero() {
 		t.Fatal(err)
 	}
+
+	deviceData.Location = "new_location" // will still fail b/c Name is the same
 
 	err = testDb.CreateDevice(&deviceData)
 
@@ -80,10 +88,12 @@ func TestGettingAllDevices(t *testing.T) {
 
 	expectedDevices := []cher.Device{
 		{
-			Name: "my_name",
+			Name:     "my_name",
+			Location: " my_location",
 		},
 		{
-			Name: "my_other_name",
+			Name:     "my_other_name",
+			Location: " my_other_location",
 		},
 	}
 
@@ -117,5 +127,39 @@ func TestGettingAllDevices(t *testing.T) {
 		t.Log(allDevices)
 		t.Errorf("Expected devices did not match return devices")
 	}
+}
 
+func TestUpdateDevice(t *testing.T) {
+	testDb := db.NewPostgresDeviceRepository(dbtest.CreateTestDbConnection(t))
+
+	deviceData := cher.Device{
+		Name:     "my_name",
+		Location: "my_location",
+	}
+
+	err := testDb.CreateDevice(&deviceData)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if deviceData.CreatedAt.IsZero() {
+		t.Fatal(err)
+	}
+
+	deviceData.Location = "my_new_location"
+
+	err = testDb.UpdateDevice(&deviceData)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getData, err := testDb.GetDevice(deviceData.Name)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if getData.Location != deviceData.Location {
+		t.Fail()
+	}
 }

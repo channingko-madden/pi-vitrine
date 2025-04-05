@@ -44,6 +44,10 @@ func (goodDb) GetAllDevices() ([]cher.Device, error) {
 	}, nil
 }
 
+func (goodDb) UpdateDevice(device *cher.Device) error {
+	return nil
+}
+
 func (goodDb) CreateIndoorClimate(climate *cher.IndoorClimate) error {
 	return nil
 }

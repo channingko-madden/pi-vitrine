@@ -9,18 +9,20 @@ import (
 	"net/http"
 )
 
+var clientName string
+
 func main() {
 
 	var clientAddressFlag = flag.String("client_address", "localhost:9000", "Network address for the client homepage")
 
-	var clientNameFlag = flag.String("name", "", "Name of the client")
+	var clientName = flag.String("name", "", "Name of the client")
 
 	var serverAddressFlag = flag.String("server_address", "", "IP address of the pi-vitrine server")
 
 	flag.Parse()
 
 	// Flag validation
-	if len(*clientNameFlag) == 0 {
+	if len(*clientName) == 0 {
 		log.Fatal("Must provide the name of the client")
 	}
 
@@ -42,10 +44,10 @@ func main() {
 	go BlinkLED(ctx)
 
 	// start sending system data
-	go SendSystemData(*clientNameFlag, "http://"+*serverAddressFlag+"/system", ctx)
+	go SendSystemData(*clientName, "http://"+*serverAddressFlag+"/system", ctx)
 
 	// start sending indoor climate data
-	go SendIndoorClimateData(*clientNameFlag, "http://"+*serverAddressFlag+"/indoor_climate", ctx)
+	go SendIndoorClimateData(*clientName, "http://"+*serverAddressFlag+"/indoor_climate", ctx)
 
 	http.HandleFunc("GET /", HomePageHandler)
 	http.HandleFunc("GET /env", GetEnvHandler)

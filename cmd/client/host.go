@@ -11,6 +11,7 @@ import (
 )
 
 type HomePageInfo struct {
+	Name       string
 	PiInfo     system.PiInfo
 	CPUTemp    float64
 	GPUTemp    float64
@@ -24,6 +25,7 @@ func gatherHomePageData() HomePageInfo {
 	info.GPUTemp, _ = system.MeasureGPUTemp()
 	info.DistroInfo, _ = system.DistroInfo()
 	info.PiInfo = system.GetPiInfo()
+	info.Name = clientName
 
 	return info
 }
