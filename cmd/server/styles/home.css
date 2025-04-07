@@ -8,7 +8,10 @@
 .search-container > input {
   display: inline-block;
   float: left;
+}
 
+.search-container > input[type=search] {
+  width: 110px;
 }
 
 /* Styling for titles */

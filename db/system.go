@@ -28,10 +28,10 @@ type SystemRepository interface {
 	GetSystemData(deviceName string, start time.Time, end time.Time) ([]cher.System, error)
 }
 
-func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
+func (r *PostgresDeviceRepository) CreateSystem(system *cher.System) error {
 
 	// Get the device id using the device name
-	deviceId, err := r.getDeviceId(data.Name)
+	deviceId, err := r.getDeviceId(system.Name)
 
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
 	}
 	defer stmt.Close()
 
-	s := newSystemData(data)
+	s := newSystemData(system)
 
 	err = stmt.QueryRow(deviceId, s.CPUTemp, s.GPUTemp).Scan(&s.CreatedAt)
 
@@ -52,7 +52,7 @@ func (r *PostgresDeviceRepository) CreateSystem(data *cher.System) error {
 		return nil
 	}
 
-	data.CreatedAt = parseCreatedTime(s.CreatedAt)
+	system.CreatedAt = parseCreatedTime(s.CreatedAt)
 
 	return err
 }

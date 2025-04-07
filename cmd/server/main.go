@@ -14,14 +14,12 @@ import (
 // DB is a handle, not the actual connection. It has a pool of
 // DB connections in the background.
 // Can use a global struct like this or pass around DB.
-var Db *db.PostgresDeviceRepository
+var Db db.Repository
 
-// the init function is called automatically for every package!
-// Sets up connection to the database and runs migrations
-func init() {
+func db_setup() {
 	connection := "user=pi-vitrine dbname=pi_vitrine password=pi-vitrine host=localhost"
 
-	Db = db.NewPostgresDeviceRepository(connection)
+	postgresDb := db.NewPostgresDeviceRepository(connection)
 
 	goose.SetBaseFS(migrations)
 
@@ -29,12 +27,16 @@ func init() {
 		panic(err)
 	}
 
-	if err := goose.Up(Db.Conn, "migrations"); err != nil {
+	if err := goose.Up(postgresDb.Conn, "migrations"); err != nil {
 		panic(err)
 	}
+
+	Db = postgresDb
 }
 
 func main() {
+
+	db_setup()
 
 	var addressFlag = flag.String("address", "localhost", "IP address")
 	var portFlag = flag.Int("port", 9000, "Port number")

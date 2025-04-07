@@ -38,13 +38,13 @@ type DeviceRepository interface {
 	UpdateDevice(device *cher.Device) error
 
 	// Returns a DeviceDoesNotExistError if the device cannot be found
-	GetDevice(macAddr string) (cher.Device, error)
+	GetDevice(name string) (cher.Device, error)
 
 	// Returns a DeviceDoesNotExistError if there are no devices
 	GetAllDevices() ([]cher.Device, error)
 }
 
-func (r *PostgresDeviceRepository) CreateDevice(deviceData *cher.Device) error {
+func (r *PostgresDeviceRepository) CreateDevice(device *cher.Device) error {
 
 	statement := "insert into devices (name, location) values ($1, $2) returning created_at"
 	stmt, err := r.Conn.Prepare(statement)
@@ -53,20 +53,20 @@ func (r *PostgresDeviceRepository) CreateDevice(deviceData *cher.Device) error {
 	}
 	defer stmt.Close()
 
-	dev := newDevice(deviceData)
+	dev := newDevice(device)
 	err = stmt.QueryRow(dev.Name, dev.Location).Scan(&dev.CreatedAt)
 
 	if err != nil {
 		return err
 	}
 
-	deviceData.CreatedAt = parseCreatedTime(dev.CreatedAt)
+	device.CreatedAt = parseCreatedTime(dev.CreatedAt)
 
 	return nil
 }
 
 // Device name is not updated
-func (r *PostgresDeviceRepository) UpdateDevice(deviceData *cher.Device) error {
+func (r *PostgresDeviceRepository) UpdateDevice(device *cher.Device) error {
 
 	statement := "update devices set location = $1 where name = $2"
 	stmt, err := r.Conn.Prepare(statement)
@@ -75,7 +75,7 @@ func (r *PostgresDeviceRepository) UpdateDevice(deviceData *cher.Device) error {
 	}
 	defer stmt.Close()
 
-	dev := newDevice(deviceData)
+	dev := newDevice(device)
 	_, err = stmt.Exec(dev.Location, dev.Name)
 
 	if err != nil {
@@ -85,7 +85,7 @@ func (r *PostgresDeviceRepository) UpdateDevice(deviceData *cher.Device) error {
 	return nil
 }
 
-func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, error) {
+func (r *PostgresDeviceRepository) GetDevice(name string) (cher.Device, error) {
 
 	statement := "select id, created_at, location from devices where name = $1"
 
@@ -96,18 +96,18 @@ func (r *PostgresDeviceRepository) GetDevice(deviceName string) (cher.Device, er
 	defer stmt.Close()
 
 	var dev device
-	err = stmt.QueryRow(deviceName).Scan(&dev.Id, &dev.CreatedAt, &dev.Location)
+	err = stmt.QueryRow(name).Scan(&dev.Id, &dev.CreatedAt, &dev.Location)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return cher.Device{}, &DeviceDoesNotExistError{Name: deviceName}
+			return cher.Device{}, &DeviceDoesNotExistError{Name: name}
 
 		}
 		return cher.Device{}, err
 	}
 
 	outDevice := cher.Device{
-		Name:      deviceName,
+		Name:      name,
 		Location:  dev.Location,
 		CreatedAt: parseCreatedTime(dev.CreatedAt),
 	}
