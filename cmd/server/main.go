@@ -36,12 +36,13 @@ func db_setup() {
 
 func main() {
 
-	db_setup()
-
 	var addressFlag = flag.String("address", "localhost", "IP address")
 	var portFlag = flag.Int("port", 9000, "Port number")
 
 	flag.Parse()
+
+	// Let --help run without db connection
+	db_setup()
 
 	addr := *addressFlag + ":" + strconv.Itoa(*portFlag)
 

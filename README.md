@@ -14,17 +14,22 @@ You can use `uname -a` to figure out the OS info on the Raspberry Pi if you ever
 
 ## Host Server
 
-The host server provides a web UI as well as HTTP endpoints for storing data sent by client devices.
+The host server provides a web UI for the user to register client devices and visualize data.
+It also provides HTTP endpoints for storing data sent by client devices.
 
 See [here](db/README.md) for postgres database setup.
 
-Run the host server from the [cmd/server/](cmd/server/) package.
+Build and run the host server from the [cmd/server/](cmd/server/) package.
+
+* There is a `--help` option to explain the different CLI parameters.
 
 
-## Client Device
+## Client Raspberry Pi Device
 
-A client device reads sensor data and sends it to the host server over HTTP. It also provides a web UI for configuring the client.
+A client Raspberry Pi device reads sensor data and sends it to the host server over HTTP. It also provides a web UI for displaying client sensor data.
 
 See [here](cmd/client/README.md) for client setup help.
 
-Run the client from the [cmd/client/](cmd/client/) package.
+Build and run the client from the [cmd/client/](cmd/client/) package.
+
+* There is a `--help` option to explain the different CLI parameters.
