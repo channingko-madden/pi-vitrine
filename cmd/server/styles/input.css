@@ -1,17 +1,13 @@
-@import url("960.css");
+@import "tailwindcss";
 
 /* Styling for the search container */
-.search-container {
-    text-align: center;
+.search-container > input[type=search]{
+  @apply border border-gray-300 rounded-md p-2 w-full
+         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
 }
 
-.search-container > input {
-  display: inline-block;
-  float: left;
-}
-
-.search-container > input[type=search] {
-  width: 110px;
+.search-container > input[type=submit]{
+  @apply border border-gray-300 bg-gray-300 rounded-md p-2 w-full;
 }
 
 /* Styling for titles */
@@ -19,22 +15,15 @@
 	height: 90%;
 	width: 100%;
 	display: flex;
-}	align-items: center;
+	align-items: center;
 	justify-content: center;
 }
 
 .title > h1 {
 	display: inline-block;
 	width: 250px;
+        height: 100px;
 	text-align: center;
-}
-
-.clear-row {
-  height: 100px;
-}
-
-.space-row {
-  height: 0px;
 }
 
 .scroll-table > th {
