@@ -15,7 +15,7 @@ Title: home.html
         <script src="https://go-echarts.github.io/go-echarts-assets/assets/echarts.min.js"></script>
 </head>
 
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors">
 
   <h1 class="text-3xl font-bold text-center my-6">pi-vitrine</h1>
 
@@ -28,7 +28,7 @@ Title: home.html
       <div class="flex-1 space-y-6">
 
         <!-- Card wrapper -->
-        <div class="bg-white shadow p-6 rounded-lg grid gap-6" hx-ext="path-params">
+        <div class="card bg-white shadow p-6 rounded-lg grid gap-6" hx-ext="path-params">
 
           <!-- List all -->
           <form class="grid gap-3" hx-get="/device" hx-target="#device_info">
@@ -69,7 +69,7 @@ Title: home.html
       </div>
 
       <!-- Right column: device info -->
-      <div id="device_info" class="flex-1 bg-white shadow p-6 rounded-lg min-h-[200px]"></div>
+      <div id="device_info" class="card flex-1 bg-white shadow p-6 rounded-lg min-h-[200px]"></div>
 
     </div>
   </section>
@@ -84,7 +84,8 @@ Title: home.html
 
       <!-- Left column: system forms -->
       <div class="flex-1">
-        <div class="bg-white shadow p-6 rounded-lg grid gap-6" hx-ext="path-params">
+        <!-- Card wrapper -->
+        <div class="card bg-white shadow p-6 rounded-lg grid gap-6" hx-ext="path-params">
 
           <!-- System Data -->
           <form class="grid gap-3"
@@ -111,8 +112,8 @@ Title: home.html
 
       <!-- Right column: results -->
       <div class="flex-1 space-y-6">
-        <div id="system_data" class="bg-white shadow p-6 rounded-lg min-h-[150px]"></div>
-        <div id="indoor_climate_fig" class="bg-white shadow p-6 rounded-lg min-h-[150px]"></div>
+        <div id="system_data" class="card bg-white shadow p-6 rounded-lg min-h-[150px]"></div>
+        <div id="indoor_climate_fig" class="card bg-white shadow p-6 rounded-lg min-h-[150px]"></div>
       </div>
     </div>
   </section>
