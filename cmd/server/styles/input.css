@@ -10,22 +10,6 @@
   @apply border border-gray-300 bg-gray-300 rounded-md p-2 w-full;
 }
 
-/* Styling for titles */
-.title {
-	height: 90%;
-	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.title > h1 {
-	display: inline-block;
-	width: 250px;
-        height: 100px;
-	text-align: center;
-}
-
 .scroll-table > th {
   font-weight: bold;
 }
@@ -39,4 +23,12 @@
 .scroll-table > tbody {
   overflow-y: auto;
   max-height: 300px; /* Adjustable */
+}
+
+.input {
+    @apply w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none;
+}
+
+.btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer transition;
 }
