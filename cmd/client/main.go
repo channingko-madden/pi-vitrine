@@ -51,6 +51,7 @@ func main() {
 
 	http.HandleFunc("GET /", HomePageHandler)
 	http.HandleFunc("GET /env", GetEnvHandler)
+	http.Handle("GET /styles/", http.FileServer(http.FS(content)))
 	log.Fatal(http.ListenAndServe(*clientAddressFlag, nil))
 
 	cancel() // stop goroutines
