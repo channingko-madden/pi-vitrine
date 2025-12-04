@@ -1,4 +1,4 @@
-# Client Devices
+# pi-vitrine client
 
 ## Raspberry Pi I2C
 
@@ -8,3 +8,9 @@
 ### Debugging I2C
 
 * Install `i2c-tools` and use `i2cdetect -y 1` to verify the address of connected I2C devices
+
+## Tailwind
+
+Use tailwindcss CLI to build output CSS file:
+
+`tailwindcss --input ./styles/input.css --output ./styles/output.css`

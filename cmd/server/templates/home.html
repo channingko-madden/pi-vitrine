@@ -9,78 +9,114 @@ Title: home.html
         <meta name="description" content="Homepage for pi-vitrine server" />
         <meta http-equiv="author" content="Channing Ko-Madden" />
         <title>Homepage</title>
-        <link href="/styles/home.css" type="text/css" rel="stylesheet" />
+        <link href="/styles/output.css" type="text/css" rel="stylesheet" />
         <script src="https://unpkg.com/htmx.org@2.0.2"></script>
         <script src="https://unpkg.com/htmx-ext-path-params@2.0.0/path-params.js"></script>
         <script src="https://go-echarts.github.io/go-echarts-assets/assets/echarts.min.js"></script>
 </head>
 
-<body>
-        <div class="container_12">
-                <div class="grid_12 title">
-                        <h1>pi-vitrine</h1>
-                </div>
-                <section class="grid_12">
-                        <div class="grid_8 alpha" hx-ext="path-params">
-                                <form hx-get="/device" hx-target="#device_info">
-                                        <input type="submit" value="List All Devices" />
-                                </form>
-                                <div class="grid_8 space-row"></div>
-                                <form class="search-container" hx-get="/device/{get_name}" hx-include="[get_name='get_name']" hx-target="#device_info">
-                                        <input type="search" name="get_name" placeholder="Device name" minlength="1"
-                                                required />
-                                        <input type="submit" value="Get Device Info" />
-                                </form>
-                                <div class="grid_8 space-row"></div>
-                                <form class="search-container" hx-post="/device" hx-target="#device_info">
-                                        <input type="search" name="device_name" placeholder="Device name" minlength="1"
-                                                required />
-                                        <input type="search" name="device_location" placeholder="Device location"
-                                                minlength="1" required />
-                                        <input type="submit" value="Register device" />
-                                </form>
-                                <div class="grid_8 space-row"></div>
-                                <form class="search-container" hx-patch="/device/{patch_name}" hx-include="[patch_name='patch_name']" hx-target="#device_info">
-                                        <input type="search" name="patch_name" placeholder="Device name" minlength="1"
-                                                required />
-                                        <input type="search" name="device_location" placeholder="Device location"
-                                                minlength="1" required />
-                                        <input type="submit" value="Update device location" />
-                                </form>
-                        </div> <!-- Inputs grid -->
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors">
 
-                        <div class="grid_4 omega" id="device_info"></div> <!-- Data display grid -->
-                </section> <!-- Device part of UI -->
+  <h1 class="text-3xl font-bold text-center my-6">pi-vitrine</h1>
 
-                <div class="grid_12 clear-row"></div>
+  <!-- Device UI Block -->
+  <section class="max-w-6xl mx-auto px-4">
 
-                <section class="grid_12">
-                        <div class="grid_4 alpha" hx-ext="path-params">
-                                <form class="search-container" hx-get="/system/{device_name}" hx-include="[device_name='device_name']"
-                                        hx-target="#system_data">
-                                        <input type="search" name="device_name" placeholder="Device name"
-                                                minlength="1" required />
-                                        <input type="search" name="days" placeholder="Number of days" min=1
-                                                required />
-                                        <input type="submit" value="Get System Data" />
-                                </form>
-                                <div class="grid_4 space-row"></div>
-                                <form class="search-container" hx-get="/indoor_climate/{device_name}"
-                                        hx-include="[device_name='device_name']" hx-target="#indoor_climate_fig">
-                                        <input type="search" name="device_name" placeholder="Device name"
-                                                minlength="1" required />
-                                        <input type="search" name="days" placeholder="Number of days" min=1
-                                                required />
-                                        <input type="submit" value="Get Indoor Climate Data" />
-                                </form>
-                        </div> <!-- System data part of UI -->
-                        <div class="grid_8 omega">
-                                <div id="system_data"></div>
-                                <div> </div>
-                                <div id="indoor_climate_fig"></div>
-                        </div> <!-- Indoor Climate part of UI -->
-                </section>
+    <div class="flex flex-col md:flex-row gap-8">
+
+      <!-- Left column: device forms -->
+      <div class="flex-1 space-y-6">
+
+        <!-- Card wrapper -->
+        <div class="card bg-white shadow p-6 rounded-lg grid gap-6" hx-ext="path-params">
+
+          <!-- List all -->
+          <form class="grid gap-3" hx-get="/device" hx-target="#device_info">
+            <input type="submit" value="List All Devices"
+              class="btn-primary" />
+          </form>
+
+          <!-- Get Device Info -->
+          <form class="grid gap-3" hx-get="/device/{get_name}"
+                hx-include="[get_name='get_name']"
+                hx-target="#device_info">
+            <input type="text" name="get_name" placeholder="Device name"
+                   required
+                   class="input" />
+            <input type="submit" value="Get Device Info"
+                   class="btn-primary" />
+          </form>
+
+          <!-- Register device -->
+          <form class="grid gap-3" hx-post="/device"
+                hx-target="#device_info">
+            <input type="text" name="device_name" placeholder="Device name" required class="input" />
+            <input type="text" name="device_location" placeholder="Device location" required class="input" />
+            <input type="submit" value="Register Device" class="btn-primary" />
+          </form>
+
+          <!-- Update device -->
+          <form class="grid gap-3"
+                hx-patch="/device/{patch_name}"
+                hx-include="[patch_name='patch_name']"
+                hx-target="#device_info">
+            <input type="text" name="patch_name" placeholder="Device name" required class="input" />
+            <input type="text" name="device_location" placeholder="Device location" required class="input" />
+            <input type="submit" value="Update Location" class="btn-primary" />
+          </form>
+
         </div>
+      </div>
+
+      <!-- Right column: device info -->
+      <div id="device_info" class="card flex-1 bg-white shadow p-6 rounded-lg min-h-[200px]"></div>
+
+    </div>
+  </section>
+
+  <!-- Spacing -->
+  <div class="h-12"></div>
+
+  <!-- System + Indoor Climate Section -->
+  <section class="max-w-6xl mx-auto px-4">
+
+    <div class="flex flex-col md:flex-row gap-8">
+
+      <!-- Left column: system forms -->
+      <div class="flex-1">
+        <!-- Card wrapper -->
+        <div class="card bg-white shadow p-6 rounded-lg grid gap-6" hx-ext="path-params">
+
+          <!-- System Data -->
+          <form class="grid gap-3"
+                hx-get="/system/{device_name}"
+                hx-include="[device_name='device_name']"
+                hx-target="#system_data">
+            <input type="text" name="device_name" placeholder="Device name" required class="input" />
+            <input type="number" name="days" placeholder="Number of days" min="1" required class="input" />
+            <input type="submit" value="Get System Data" class="btn-primary" />
+          </form>
+
+          <!-- Indoor Climate -->
+          <form class="grid gap-3"
+                hx-get="/indoor_climate/{device_name}"
+                hx-include="[device_name='device_name']"
+                hx-target="#indoor_climate_fig">
+            <input type="text" name="device_name" placeholder="Device name" required class="input" />
+            <input type="number" name="days" placeholder="Number of days" min="1" required class="input" />
+            <input type="submit" value="Get Indoor Climate Data" class="btn-primary" />
+          </form>
+
+        </div>
+      </div>
+
+      <!-- Right column: results -->
+      <div class="flex-1 space-y-6">
+        <div id="system_data" class="card bg-white shadow p-6 rounded-lg min-h-[150px]"></div>
+        <div id="indoor_climate_fig" class="card bg-white shadow p-6 rounded-lg min-h-[150px]"></div>
+      </div>
+    </div>
+  </section>
 </body>
 
 </html>

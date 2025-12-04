@@ -9,28 +9,65 @@ Title: home.html
 	<meta name="description" content="Homepage for pi-vitrine client" />
 	<meta http-equiv="author" content="Channing Ko-Madden" />
 	<title>Homepage</title>
+        <link href="/styles/output.css" type="text/css" rel="stylesheet" />
 	<script src="https://unpkg.com/htmx.org@2.0.2"></script>
 </head>
 
-<body>
-	<h1>pi-vitrine </h1>
-	<p>
-		{{ .Name }}
-	</p>
-	<p>
-		CPU Temp (C): {{ .CPUTemp }}
-	</p>
-	<p>
-		GPU Temp (C): {{ .GPUTemp }}
-	</p>
-	<p>
-		Distro Info: {{ .DistroInfo }}
-	</p>
-	<p>
-		Pi Info: {{ .PiInfo }}
-	</p>
-	<button hx-get="/env" hx-target="#env_data">Get Env Data</button>
-	<div id="env_data"></div>
+<body class="bg-zinc-950 text-zinc-200 min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-lg bg-zinc-900 shadow-2xl rounded-2xl p-8 space-y-6 border border-zinc-800">
+
+    <h1 class="text-3xl font-extrabold text-center 
+               bg-gradient-to-r from-purple-400 to-pink-500 
+               text-transparent bg-clip-text tracking-wide">
+      pi-vitrine
+    </h1>
+
+    <div class="space-y-4">
+      <div>
+        <p class="text-xs uppercase tracking-widest text-zinc-400">Name</p>
+        <p class="text-xl font-semibold">{{ .Name }}</p>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
+          <p class="text-xs tracking-wide text-zinc-400">CPU Temp (°C)</p>
+          <p class="text-2xl font-bold text-red-400">{{ .CPUTemp }}</p>
+        </div>
+
+        <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
+          <p class="text-xs tracking-wide text-zinc-400">GPU Temp (°C)</p>
+          <p class="text-2xl font-bold text-orange-400">{{ .GPUTemp }}</p>
+        </div>
+      </div>
+
+      <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
+        <p class="text-xs tracking-wide text-zinc-400">Distro Info</p>
+        <p class="text-lg">{{ .DistroInfo }}</p>
+      </div>
+
+      <div class="bg-zinc-800 p-4 rounded-xl border border-zinc-700">
+        <p class="text-xs tracking-wide text-zinc-400">Pi Info</p>
+        <p class="text-lg">{{ .PiInfo }}</p>
+      </div>
+    </div>
+
+    <div class="pt-4">
+      <button
+        hx-get="/env"
+        hx-target="#env_data"
+        class="w-full py-3 rounded-xl 
+               bg-gradient-to-r from-purple-500 to-pink-500 
+               text-white font-semibold text-lg shadow-lg 
+               hover:opacity-90 transition"
+      >
+        Get Env Data
+      </button>
+    </div>
+
+    <div id="env_data"
+         class="mt-4 bg-zinc-800 rounded-xl p-4 border border-zinc-700 min-h-14">
+    </div>
+  </div>
 </body>
 
 </html>
